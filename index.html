@@ -1,0 +1,16 @@
+<html>
+	<body>
+		<h1>Hallo van de Ubuntu server!</h1>
+		<h2>Hier werken de Brabbelaars</h2>
+		<h3>De github-code wordt automatisch op de server gezet!</h3>
+		<h4>Huidige datum en tijd:<p id="date-time"></p></h4>
+		<script>
+			function displayDateTime() {
+                const now = new Date();
+                const dateTime = now.toLocaleString();
+                document.getElementById("date-time").textContent = dateTime;
+			}
+			displayDateTime();
+		</script>
+	</body>
+</html>
