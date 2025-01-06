@@ -49,6 +49,20 @@ router.post('/api/recepten',  checkSchema(receptenCreateValidatie), resultValida
   }
 });
 
+router.get('/api/recepten', cors(corsOptions), async (request, response) => {
+    try {
+        const [ophalenRecepten] = await pool.query(`SELECT * FROM recepten`)
+        if (ophalenRecepten.length === 0){
+            return response.status(404).send({msg: "No recipe found"})
+        }
+        return response.status(200).json(ophalenRecepten);
+    } catch (error) {
+        console.error('Database error:', error);
+        return response.status(500).send({ msg: 'Internal server error' });
+    }
+});
+
+
 
 
 export default router;
