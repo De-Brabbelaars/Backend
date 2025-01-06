@@ -575,9 +575,7 @@ export const createOrderValidation = {
     },
     LockerID: {
         optional: false,
-        isInt:{
-            errorMessage: "Locker ID moet een nummer zijn",
-        },
+        ...isStringValidation('Locker iD'),
         ...notEmptyValidation('Locker id '),
         trim: true,
         toInt: true,
