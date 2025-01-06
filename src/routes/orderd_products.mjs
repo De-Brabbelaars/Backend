@@ -14,6 +14,85 @@ const router = Router();
 
 
 
+/**
+ * @swagger
+ * /api/orderd_products:
+ *   post:
+ *     tags:
+ *       - Ordered Products
+ *     summary: Maak een nieuwe ordered_product aan
+ *     description: Voeg een nieuw record toe aan de `orderd_products`-tabel door een product, order en hoeveelheid te specificeren.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ProductID
+ *               - OrderID
+ *               - Amount
+ *             properties:
+ *               ProductID:
+ *                 type: integer
+ *                 description: Het unieke ID van het product dat wordt besteld.
+ *                 example: 5
+ *               OrderID:
+ *                 type: integer
+ *                 description: Het unieke ID van de order waaraan het product wordt gekoppeld.
+ *                 example: 10
+ *               Amount:
+ *                 type: integer
+ *                 description: Het aantal producten dat wordt besteld.
+ *                 example: 3
+ *     responses:
+ *       201:
+ *         description: Ordered product succesvol aangemaakt.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ProductID:
+ *                   type: integer
+ *                   example: 5
+ *                 OrderID:
+ *                   type: integer
+ *                   example: 10
+ *                 Amount:
+ *                   type: integer
+ *                   example: 3
+ *       400:
+ *         description: Ongeldig verzoek, of geen order gevonden met de gegeven OrderID.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: No order found with given Order ID
+ *       404:
+ *         description: Geen product gevonden met de opgegeven ProductID.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: No product found with given productID
+ *       500:
+ *         description: Serverfout.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Server error
+ */
 
 // POST request voor het aanmaken van een nieuwe gebruiker
 router.post('/api/orderd_products',  checkSchema(createorderdProductValidation), resultValidator, cors(corsOptions), async (request, response) => {
@@ -21,7 +100,7 @@ router.post('/api/orderd_products',  checkSchema(createorderdProductValidation),
     const data = matchedData(request); 
     try {
 
-        const [existingorder] = await pool.query(`SELECT * FROM orders WHERE orderID = ?`, [data.OrderID]);         
+        const [existingorder] = await pool.query(`SELECT * FROM orders WHERE OrderID = ?`, [data.OrderID]);         
         if (existingorder.length === 0) {
             return response.status(400).send({ msg: "No order found with given Order ID " });
         }
@@ -32,7 +111,7 @@ router.post('/api/orderd_products',  checkSchema(createorderdProductValidation),
         }
 
         await pool.query(
-            `INSERT INTO orderd_products (ProductID, OrderID, Amount) VALUES (?, ?, ?)`, 
+            `INSERT INTO ordered_products (ProductID, OrderID, Amount) VALUES (?, ?, ?)`, 
             [data.ProductID, data.OrderID, data.Amount,] 
         );
 
@@ -45,19 +124,69 @@ router.post('/api/orderd_products',  checkSchema(createorderdProductValidation),
         return response.status(201).send(newOrderdProduct); // HTTP status 201 betekent 'Created'
 
     } catch (err) {
-
         return response.status(500).send({ msg: "Server error" });
     }
 });
 
 
 
+/**
+ * @swagger
+ * /api/orderd_products:
+ *   get:
+ *     tags:
+ *       - Ordered Products
+ *     summary: Haal alle ordered products op
+ *     description: Haalt een lijst op met alle records in de `orderd_products`-tabel.
+ *     responses:
+ *       200:
+ *         description: Lijst met ordered products succesvol opgehaald.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ProductID:
+ *                     type: integer
+ *                     description: Het unieke ID van het product.
+ *                     example: 5
+ *                   OrderID:
+ *                     type: integer
+ *                     description: Het unieke ID van de order.
+ *                     example: 10
+ *                   Amount:
+ *                     type: integer
+ *                     description: Het aantal producten dat is besteld.
+ *                     example: 3
+ *       404:
+ *         description: Geen ordered products gevonden.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: No orderd products found
+ *       500:
+ *         description: Serverfout.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Internal server error
+ */
 
 router.get('/api/orderd_products', cors(corsOptions), async (request, response) => {
     try {
-        const [getorderd_products] = await pool.query(`SELECT * FROM orderd_products`)
+        const [getorderd_products] = await pool.query(`SELECT * FROM ordered_products`)
         if (getorderd_products.length === 0){
-            return response.status(404).send({msg: "No orderd products found"})
+            return response.status(404).send({msg: "No ordered products found"})
         }
         return response.status(200).json(getorderd_products);
     } catch (error) {
@@ -68,6 +197,63 @@ router.get('/api/orderd_products', cors(corsOptions), async (request, response) 
 
 
 
+/**
+ * @swagger
+ * /api/orderd_products/{id}:
+ *   get:
+ *     tags:
+ *       - Ordered Products
+ *     summary: Haal een ordered product op aan de hand van een Order ID
+ *     description: Haalt een specifiek ordered product op uit de database op basis van de unieke `OrderID`.
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Het unieke OrderID van het ordered product
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *     responses:
+ *       200:
+ *         description: Ordered product succesvol opgehaald
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ProductID:
+ *                   type: integer
+ *                   description: Het unieke ID van het product.
+ *                   example: 5
+ *                 OrderID:
+ *                   type: integer
+ *                   description: Het unieke ID van de order.
+ *                   example: 10
+ *                 Amount:
+ *                   type: integer
+ *                   description: Het aantal producten dat is besteld.
+ *                   example: 3
+ *       404:
+ *         description: Geen ordered product gevonden met het opgegeven OrderID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: No locker found with given Locker ID
+ *       500:
+ *         description: Serverfout
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Internal server error
+ */
 
 // Ophalen van users aan de hand van id
 router.get('/api/orderd_products/:id', checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
@@ -77,12 +263,12 @@ router.get('/api/orderd_products/:id', checkSchema(IDvalidatie), resultValidator
 
     try {
         // SQL-query uitvoeren om gebruiker te zoeken
-        const [existingorder] = await pool.query('SELECT * FROM orderd_products WHERE OrderID = ?', [orderid]);
+        const [existingorder] = await pool.query('SELECT * FROM ordered_products WHERE OrderID = ?', [orderid]);
 
         if (existingorder.length > 0) {
             return response.status(200).json(existingorder);
         } else {
-            return response.status(404).send({ msg: 'No locker found with given Locker ID' });
+            return response.status(404).send({ msg: 'No ordered products found with given ID' });
         }
     } catch (error) {
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
