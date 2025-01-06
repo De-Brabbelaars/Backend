@@ -6,6 +6,7 @@ import bookingsRouter from "./bookings.mjs";
 import categoriesRouter from "./categories.mjs";
 import lockersRouter from "./lockers.mjs";
 import orderdProductsRouter from "./orderd_products.mjs";
+import receptenRouter from "./recepten.mjs";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use(bookingsRouter);
 router.use(categoriesRouter);
 router.use(lockersRouter);
 router.use(orderdProductsRouter);
+router.use(receptenRouter);
 
 export default router;

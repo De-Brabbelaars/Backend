@@ -686,5 +686,37 @@ export const patchOrdersValidation = {
             errorMessage: "Moment gathered must be in MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)",
         },
     },
-    
+
+};
+
+export const receptenCreateValidatie = {
+    Name: {
+        ...notEmptyValidation('Name'),
+        optional: false,
+        ...isStringValidation('Name'),
+        ...isLengthValidation(3, 32, 'Name'),
+    },
+    AssetsURL: {
+        optional: false,
+        ...notEmptyValidation('AssetsURl'),
+        ...isStringValidation('AssetsURL'),
+        ...isLengthValidation(10, 100, 'AssetsURL'),
+    },
+    PeopleServed: {
+        optional: false,
+        ...notEmptyValidation('PeopleServed'),
+        ...isStringValidation('PeopleServed'),
+        ...isLengthValidation(1, 8, 'PeopleServed'),
+    },
+    PrepTime: {
+        optional: false,
+        matches: {
+            options: [/^\d{2}:\d{2}$/],
+            errorMessage: "Time must be in HH:MM format",
+        },
+        ...notEmptyValidation('PrepTime'),
+        ...isStringValidation('PrepTime'),
+        ...isLengthValidation(1, 100, 'PrepTime'),
+    },
+
 };
