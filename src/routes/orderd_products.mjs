@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { query, checkSchema, validationResult, body, matchedData } from "express-validator";
-import {  IDvalidatie, UpdateLockerValidation, UpdateLockerpatchValidation, createorderdProductValidation, updateorderdProductValidation } from "../utils/validationschemas.mjs"
+import {  IDvalidatie, createorderdProductValidation, updateorderdProductValidation } from "../utils/validationschemas.mjs"
 import { userCreationLimiter, resultValidator} from "../utils/middelwares.mjs";
 import pool from "../postgress/db.mjs";
 import cors from 'cors';
@@ -382,26 +382,6 @@ router.put ('/api/orderd_products/:id', checkSchema(updateorderdProductValidatio
 
 
 
-
-// // delete request voor het verwijderen van een user in dit geval.
-// router.delete ('/api/lockers/:id', checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
-//     const data = matchedData(request); 
-//     const lockerid = data.id;
-
-//     try {
-//         const [lockerCheck] = await pool.query('SELECT * FROM lockers Where LockerID = ?', [lockerid]);
-//         if (lockerCheck.length === 0){
-//             return response.status(404).send({msg: "Locker not found"})
-//         }
-//         else
-//         await pool.query('DELETE FROM lockers WHERE LockerID = ?', [lockerid]);
-//         return response.status(204).send({msg: "Locker is deleted"});
-
-//     } catch (error) {
-//         console.error('Database error:', error);
-//         return response.status(500).send({ msg: 'Internal server error' });
-//     }
-// });
 
 
 export default router;
