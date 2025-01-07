@@ -279,43 +279,43 @@ router.get('/api/orderd_products/:id', checkSchema(IDvalidatie), resultValidator
 
 
 
+// order id en product id ophalen 
+// put request 
+router.put ('/api/orderd_products/:id', checkSchema(updateorderdProductValidation),  checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
+    // gevalideerde data wordt opgeslagen in data variabelen
+    const data = matchedData(request); 
+    const id= request.params.id;
 
-// // put request 
-// router.put ('/api/lockers/:id', checkSchema(updateorderdProductValidation),  checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
-//     // gevalideerde data wordt opgeslagen in data variabelen
-//     const data = matchedData(request); 
-//     const id= request.params.id;
-
-//     const [invalidid] = await pool.query(`SELECT * FROM lockers WHERE LockerID = ?`, [lockerid]);
-//     if(invalidid.length === 0) {
-//         return response.status(404).send({msg: "No locker found with given ID"})
-//     } 
+    const [invalidid] = await pool.query(`SELECT * FROM ordered_products WHERE OrderID = ?`, [id]);
+    if(invalidid.length === 0) {
+        return response.status(404).send({msg: "No order found with given ID"})
+    } 
 
     
-//     const [NonExsistingBookingID] = await pool.query(`SELECT * FROM Bookings WHERE BookingID = ?`, [data.BookingID]); 
-//     if (NonExsistingBookingID.length === 0) {
-//         return response.status(404).send({ msg: "No Booking found with given BookingID" });
-//     }
+    const [checkingProductID] = await pool.query(`SELECT * FROM ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
+    if (checkingProductID.length === 0) {
+        return response.status(404).send({ msg: "No products found with given product and order ID" });
+    }
     
-//     try {
-//         const [updatedlocker] = await pool.query(
-//             `UPDATE lockers
-//             SET BookingID = ?, MomentDelivered = ? WHERE LockerID = ? `, // SQL query om een gebruiker toe te voegen
-//             [data.BookingID, data.MomentDelivered, lockerid] // De waarden die in de query moeten worden ingevuld
-//         );
+    try {
+        const [updatedOrderedProducts] = await pool.query(
+            `UPDATE ordered_products
+            SET ProductID = ?, OrderID = ?, Amount = ? WHERE OrderID = ? `, // SQL query om een gebruiker toe te voegen
+            [data.Orderid, data.ProductID, data.Amount] // De waarden die in de query moeten worden ingevuld
+        );
         
-//         if (updatedlocker.affectedRows === 0) {
-//             return response.status(404).send({ msg: 'Locker not updated' });  // Als er geen rijen zijn bijgewerkt stuur 404 status
-//         }
-//         return response.status(200).send({ msg: 'Locker updated successfully' }); //false run 200 status
+        if (updatedOrderedProducts.affectedRows === 0) {
+            return response.status(404).send({ msg: 'Ordered_products not updated' });  // Als er geen rijen zijn bijgewerkt stuur 404 status
+        }
+        return response.status(200).send({ msg: 'Ordered_products updated successfully' }); //false run 200 status
         
-//     } catch (error) {
-//         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
-//         console.error('Database error:', error);
-//         return response.status(500).send({ msg: 'Internal server error' });
-//     }
+    } catch (error) {
+        // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
+        console.error('Database error:', error);
+        return response.status(500).send({ msg: 'Internal server error' });
+    }
     
-// });
+});
 
 
 
