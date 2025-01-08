@@ -158,6 +158,24 @@ export const IDvalidatie = {
         toInt: true,
     },
 };
+export const orderIDValidation = {
+    orderId: {
+        optional: false,
+        isInt: { errorMessage: "ID moet een nummer zijn"},
+        trim: true,
+        escape: true,
+        toInt: true,
+    },
+};
+export const ProductIDValidation = {
+    productId: {
+        optional: false,
+        isInt: { errorMessage: "ID moet een nummer zijn"},
+        trim: true,
+        escape: true,
+        toInt: true,
+    },
+};
 
 
 

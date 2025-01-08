@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { query, checkSchema, validationResult, body, matchedData } from "express-validator";
-import {  IDvalidatie, createorderdProductValidation, updateorderdProductValidation } from "../utils/validationschemas.mjs"
+import {  IDvalidatie, ProductIDValidation, createorderdProductValidation, orderIDValidation, updateorderdProductValidation } from "../utils/validationschemas.mjs"
 import { userCreationLimiter, resultValidator} from "../utils/middelwares.mjs";
 import pool from "../postgress/db.mjs";
 import cors from 'cors';
@@ -11,6 +11,7 @@ import { corsOptions } from "../utils/middelwares.mjs";
 
 // maakt een routes aan
 const router = Router();
+
 
 
 
@@ -110,6 +111,12 @@ router.post('/api/orderd_products',  checkSchema(createorderdProductValidation),
             return response.status(404).send({ msg: "No product found with given productID" });
         }
 
+
+        const [exsitingCombination] = await pool.query(`SELECT * FROM ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
+        if (exsitingCombination.length > 0) {
+            return response.status(404).send({ msg: "Product is already ordered" });
+        }
+
         await pool.query(
             `INSERT INTO ordered_products (ProductID, OrderID, Amount) VALUES (?, ?, ?)`, 
             [data.ProductID, data.OrderID, data.Amount,] 
@@ -127,6 +134,7 @@ router.post('/api/orderd_products',  checkSchema(createorderdProductValidation),
         return response.status(500).send({ msg: "Server error" });
     }
 });
+
 
 
 
@@ -194,6 +202,7 @@ router.get('/api/orderd_products', cors(corsOptions), async (request, response) 
         return response.status(500).send({ msg: 'Internal server error' });
     }
 });
+
 
 
 
@@ -279,29 +288,112 @@ router.get('/api/orderd_products/:id', checkSchema(IDvalidatie), resultValidator
 
 
 
-// order id en product id ophalen 
-// put request 
-router.put ('/api/orderd_products/:id', checkSchema(updateorderdProductValidation),  checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
+
+/**
+ * @swagger
+ * /api/orderd_products/{id}:
+ *   put:
+ *     tags:
+ *       - Ordered Products
+ *     summary: Wijzig specifieke gegevens van een bestaand besteld product
+ *     description: |
+ *       Dit endpoint wordt gebruikt om een of meerdere velden van een bestaand besteld product bij te werken.
+ *       Alleen de velden die moeten worden gewijzigd hoeven in de request body te worden opgenomen.
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: Het unieke ID van de order waaraan het product is gekoppeld.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ProductID:
+ *                 type: integer
+ *                 description: Het unieke ID van het product.
+ *                 example: 2
+ *               OrderID:
+ *                 type: integer
+ *                 description: Het unieke ID van de order.
+ *                 example: 1
+ *               Amount:
+ *                 type: integer
+ *                 description: Het aantal van het product dat is besteld.
+ *                 example: 3
+ *     responses:
+ *       200:
+ *         description: Besteld product succesvol bijgewerkt
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Ordered_products updated successfully
+ *       400:
+ *         description: Ongeldige of ontbrekende invoer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   examples:
+ *                     MissingFields: There are missing required fields in the request body
+ *                     InvalidInput: Provided data is not valid
+ *       404:
+ *         description: Geen besteld product gevonden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   examples:
+ *                     NoMatch: No ordered products found with given orderID and product ID
+ *                     NotUpdated: Ordered_products not updated
+ *       500:
+ *         description: Serverfout
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Internal server error
+ */
+
+router.put ('/api/orderd_products/:id', checkSchema(createorderdProductValidation),  checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
     // gevalideerde data wordt opgeslagen in data variabelen
     const data = matchedData(request); 
     const id= request.params.id;
+    const ProductID = data.ProductID
 
-    const [invalidid] = await pool.query(`SELECT * FROM ordered_products WHERE OrderID = ?`, [id]);
-    if(invalidid.length === 0) {
-        return response.status(404).send({msg: "No order found with given ID"})
+    const [NoMatch] = await pool.query(`SELECT * FROM ordered_products WHERE OrderID = ? and ProductID = ?`, [id, data.ProductID]);
+    if(NoMatch.length === 0) {
+        return response.status(404).send({msg: "No orderd products found with given orderID"})
     } 
 
-    
-    const [checkingProductID] = await pool.query(`SELECT * FROM ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
-    if (checkingProductID.length === 0) {
-        return response.status(404).send({ msg: "No products found with given product and order ID" });
+    const [exsitingCombination] = await pool.query(`SELECT * FROM ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
+    if (exsitingCombination.length > 0) {
+        return response.status(404).send({ msg: "Product is already ordered" });
     }
-    
+
     try {
         const [updatedOrderedProducts] = await pool.query(
-            `UPDATE ordered_products
-            SET ProductID = ?, OrderID = ?, Amount = ? WHERE OrderID = ? `, // SQL query om een gebruiker toe te voegen
-            [data.Orderid, data.ProductID, data.Amount] // De waarden die in de query moeten worden ingevuld
+            `UPDATE ordered_products 
+            SET ProductID = ?, OrderID = ?, Amount = ? WHERE OrderID = ? and ProductID = ? `, // SQL query om een gebruiker toe te voegen
+            [data.ProductID, data.OrderID, data.Amount, id, ProductID] // De waarden die in de query moeten worden ingevuld
         );
         
         if (updatedOrderedProducts.affectedRows === 0) {
@@ -319,68 +411,246 @@ router.put ('/api/orderd_products/:id', checkSchema(updateorderdProductValidatio
 
 
 
+/**
+ * @swagger
+ * /api/ordered_products/{orderId}/{productId}:
+ *   patch:
+ *     tags:
+ *       - Ordered Products
+ *     summary: Wijzig specifieke gegevens van een besteld product
+ *     description: |
+ *       Dit endpoint wordt gebruikt om een of meerdere velden van een bestaand besteld product bij te werken.
+ *       Alleen de velden die moeten worden gewijzigd hoeven in de request body te worden opgenomen.
+ *     parameters:
+ *       - name: orderId
+ *         in: path
+ *         description: Het unieke ID van de order.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - name: productId
+ *         in: path
+ *         description: Het unieke ID van het product.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 2
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               OrderID:
+ *                 type: integer
+ *                 description: Het unieke ID van de order.
+ *                 example: 1
+ *               ProductID:
+ *                 type: integer
+ *                 description: Het unieke ID van het product.
+ *                 example: 2
+ *               Amount:
+ *                 type: integer
+ *                 description: Het aantal van het product dat is besteld.
+ *                 example: 3
+ *     responses:
+ *       200:
+ *         description: Besteld product succesvol bijgewerkt
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Ordered product updated successfully
+ *       400:
+ *         description: Ongeldige of ontbrekende invoer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   examples:
+ *                     NoFields: There are no fields to update
+ *                     NoValues: No changes were made
+ *       404:
+ *         description: Geen besteld product gevonden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: No ordered products found with the given OrderID and ProductID
+ *       500:
+ *         description: Serverfout
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Internal server error
+ */
 
-// // patch request voor het aanpassen van een of meerdere gegevens in een bestand.
-// router.patch ('/api/lockers/:id', checkSchema(UpdateLockerpatchValidation),  checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
-//     // gevalideerde data wordt opgeslagen in data variabelen
-//     const data = matchedData(request); 
-//     const lockerid = request.params.id;
+router.patch('/api/ordered_products/:orderId/:productId', checkSchema(updateorderdProductValidation), checkSchema(orderIDValidation), checkSchema(ProductIDValidation), resultValidator, cors(corsOptions), async (request, response) => {
+    const { orderId, productId } = request.params; // Unieke IDs van de route
+    const data = matchedData(request); // Gevalideerde data uit de request body
 
-//     try {
-//         const [existingLocker] = await pool.query('SELECT * FROM lockers WHERE LockerID = ?', [lockerid]);
+    try {
+        // Controleer of het unieke paar van OrderID en ProductID bestaat
+        const [existingProduct] = await pool.query(
+            `SELECT * FROM ordered_products WHERE OrderID = ? AND ProductID = ?`,
+            [orderId, productId]
+        );
 
-//         if (existingLocker.length === 0) {
-//             return response.status(404).send({msg: "Locker not found"}); 
-//         }
+        if (existingProduct.length === 0) {
+            return response.status(404).send({ msg: "No ordered products found with the given OrderID and ProductID" });
+        }
 
-//         const FieldsToUpdate =[];
-//         const ValuesToUpdate = [];
+        const [exsitingCombination] = await pool.query(`SELECT * FROM ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
+        if (exsitingCombination.length > 0) {
+            return response.status(404).send({ msg: "Product is already ordered" });
+        }
+        // Velden en waarden die moeten worden bijgewerkt
+        const fieldsToUpdate = [];
+        const valuesToUpdate = [];
 
-//         if(data.LockerID){
-//             FieldsToUpdate.push(`LockerID = ?`);
-//             ValuesToUpdate.push(data.LockerID);
-//         }
-//         if(data.MomentDelivered){
-//             FieldsToUpdate.push(`MomentDelivered = ?`);
-//             ValuesToUpdate.push(data.MomentDelivered);
-//         }
+        if (data.OrderID) {
+            fieldsToUpdate.push(`OrderID = ?`);
+            valuesToUpdate.push(data.OrderID);
+        }
+        if (data.ProductID) {
+            fieldsToUpdate.push(`ProductID = ?`);
+            valuesToUpdate.push(data.ProductID);
+        }
+        if (data.Amount) {
+            fieldsToUpdate.push(`Amount = ?`);
+            valuesToUpdate.push(data.Amount);
+        }
+
+        // Geen velden om bij te werken
+        if (fieldsToUpdate.length === 0) {
+            return response.status(400).send({ msg: "There are no fields to update" });
+        }
+
+        // Voeg orderId en productId toe aan de waarden (voor de WHERE-clause)
+        valuesToUpdate.push(orderId, productId);
+
+        // Stel de SQL-query samen
+        const sqlQuery = `
+            UPDATE ordered_products
+            SET ${fieldsToUpdate.join(', ')}
+            WHERE OrderID = ? AND ProductID = ?
+        `;
+
+        // Voer de query uit
+        const [result] = await pool.query(sqlQuery, valuesToUpdate);
+
+        if (result.affectedRows === 0) {
+            return response.status(400).send({ msg: "No changes were made" });
+        }
+
+        // Succes
+        return response.status(200).send({ msg: "Ordered product updated successfully" });
+
+    } catch (error) {
+        // Foutafhandeling
+        console.error('Database error:', error);
+        return response.status(500).send({ msg: 'Internal server error' });
+    }
+});
 
 
-//         ValuesToUpdate.push(lockerid);
-
-//         if (FieldsToUpdate === 0){
-//             return response.status(400).send({msg: "there are no fields to update"});
-//         } 
-
-//         const [existingLockerID] = await pool.query(`SELECT * FROM lockers WHERE LockerID = ?`, [data.LockerID]); 
-
-//         if (existingLockerID.length > 0) {
-//             return response.status(400).send({ msg: "Locker ID already exists" });
-//         }
-        
-//         //opstellen van de query
-//         const sqlQuery = `
-//             UPDATE lockers
-//             SET ${FieldsToUpdate.join(', ')} WHERE LockerID = ?
-//         `;
-
-//         //uitvoeren van de query
-//         const [updatedlocker] = await pool.query(sqlQuery, ValuesToUpdate);
-
-//         if (updatedlocker.affectedRows === 0 ){
-//             return response.status(400).send({msg: "no given values to update"})
-//         }
-
-//         return response.status(200).send({msg: "Locker is updated"})
-
-//     } catch (error) {
-//          // Foutafhandeling: Log de fout en stuur een interne serverfout terug
-//         console.error('Database error:', error);
-//         return response.status(500).send({ msg: 'Internal server error' });
-//     }
-// });
 
 
+/**
+ * @swagger
+ * /api/ordered_products/{orderId}/{productId}:
+ *   delete:
+ *     tags:
+ *       - Ordered Products
+ *     summary: Verwijder een besteld product
+ *     description: |
+ *       Dit endpoint verwijdert een besteld product op basis van de unieke IDs van de order en het product.
+ *     parameters:
+ *       - name: orderId
+ *         in: path
+ *         description: Het unieke ID van de order waaraan het product is gekoppeld.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - name: productId
+ *         in: path
+ *         description: Het unieke ID van het product dat verwijderd moet worden.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 2
+ *     responses:
+ *       204:
+ *         description: Besteld product succesvol verwijderd
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Ordered products are deleted.
+ *       404:
+ *         description: Geen besteld product gevonden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: No ordered products found with given order and product id
+ *       500:
+ *         description: Serverfout
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Internal server error
+ */
+
+// Delete request voor het verwijderen van een besteld product
+router.delete('/api/ordered_products/:orderId/:productId', checkSchema(orderIDValidation), checkSchema(ProductIDValidation), resultValidator, cors(corsOptions), async (request, response) => {
+    const { orderId, productId } = request.params; // Unieke IDs van de route
+
+    try {
+        const [ordercheck] = await pool.query('SELECT * FROM ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
+        if (ordercheck.length === 0) {
+            return response.status(404).send({ msg: "No ordered products found with given order and product id" });
+        }
+
+        await pool.query('DELETE FROM ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
+
+        const [checkAfterDelete] = await pool.query('SELECT * FROM ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
+        if (checkAfterDelete.length === 0) {
+            return response.status(204).send({ msg: "Ordered product is deleted." });
+        }
+        return response.status(404).send({ msg: "No ordered products found with given order and product id" });
+
+    } catch (error) {
+        console.error('Database error:', error);
+        return response.status(500).send({ msg: 'Internal server error' });
+    }
+});
 
 
 
