@@ -162,29 +162,29 @@ router.get('/api/users', checkSchema(filterValidationSchema), resultValidator, c
  *               - postalcode
  *               - country
  *             properties:
- *               email:
+ *               Email:
  *                 type: string
  *                 format: email
  *                 example: jurgen@gmail.com
- *               phone:
+ *               Phone:
  *                 type: string
  *                 example: "0634567890"
- *               firstname:
+ *               Firstname:
  *                 type: string
  *                 example: Jurgen
- *               lastname:
+ *               Lastname:
  *                 type: string
  *                 example: Doe
- *               housenumber:
+ *               Housenumber:
  *                 type: string
  *                 example: 445
- *               streetname:
+ *               Streetname:
  *                 type: string
  *                 example: Main Street
- *               postalcode:
+ *               Postalcode:
  *                 type: string
  *                 example: 12345
- *               country:
+ *               Country:
  *                 type: string
  *                 example: Netherlands
  *     responses:
@@ -428,29 +428,29 @@ router.get('/api/users/:id', checkSchema(IDvalidatie), resultValidator, cors(cor
  *               - postalcode
  *               - country
  *             properties:
- *               email:
+ *               Email:
  *                 type: string
  *                 format: email
  *                 example: test@gmail.com
- *               phone:
+ *               Phone:
  *                 type: string
  *                 example: "0634567890"
- *               firstname:
+ *               Firstname:
  *                 type: string
  *                 example: Jurgen
- *               lastname:
+ *               Lastname:
  *                 type: string
  *                 example: Doe
- *               housenumber:
+ *               Housenumber:
  *                 type: string
  *                 example: 445
- *               streetname:
+ *               Streetname:
  *                 type: string
  *                 example: Main Street
- *               postalcode:
+ *               Postalcode:
  *                 type: string
  *                 example: 12345
- *               country:
+ *               Country:
  *                 type: string
  *                 example: Netherlands
  *     responses:
@@ -550,29 +550,29 @@ router.put ('/api/users/:id', checkSchema(createuserValidationSchema),  checkSch
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               Email:
  *                 type: string
  *                 format: email
  *                 example: jurgen@gmail.com
- *               phone:
+ *               Phone:
  *                 type: string
  *                 example: "0634567890"
- *               firstname:
+ *               Firstname:
  *                 type: string
  *                 example: Jurgen
- *               lastname:
+ *               Lastname:
  *                 type: string
  *                 example: Doe
- *               housenumber:
+ *               Housenumber:
  *                 type: string
  *                 example: 455
- *               streetname:
+ *               Streetname:
  *                 type: string
  *                 example: Main Street
- *               postalcode:
+ *               Postalcode:
  *                 type: string
  *                 example: 12345
- *               country:
+ *               Country:
  *                 type: string
  *                 example: Netherlands
  *     responses:

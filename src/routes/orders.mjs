@@ -704,9 +704,10 @@ router.patch ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchem
  *   delete:
  *     tags:
  *       - Orders
- *     summary: Verwijder een bestaande order
+ *     summary: Verwijder een bestaande order en de gekoppelde producten
  *     description: |
- *       Dit endpoint verwijdert een bestaande order uit de database op basis van het opgegeven unieke order ID.
+ *       Dit endpoint verwijdert een bestaande order en de bijbehorende producten uit de database op basis van het opgegeven unieke order ID.
+ *       Als de order of de gekoppelde producten niet worden gevonden, retourneert het een foutmelding.
  *     parameters:
  *       - name: id
  *         in: path
@@ -717,7 +718,7 @@ router.patch ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchem
  *           example: 1
  *     responses:
  *       204:
- *         description: Order succesvol verwijderd
+ *         description: Order en gekoppelde producten succesvol verwijderd
  *         content:
  *           application/json:
  *             schema:
@@ -725,9 +726,9 @@ router.patch ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchem
  *               properties:
  *                 msg:
  *                   type: string
- *                   example: Order is deleted
+ *                   example: Order and products are deleted.
  *       404:
- *         description: Geen order gevonden
+ *         description: Geen order of gekoppelde producten gevonden
  *         content:
  *           application/json:
  *             schema:
@@ -735,7 +736,7 @@ router.patch ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchem
  *               properties:
  *                 msg:
  *                   type: string
- *                   example: Order not found
+ *                   example: Order or products found with given ID
  *       500:
  *         description: Serverfout
  *         content:
@@ -758,9 +759,15 @@ router.delete ('/api/orders/:id', checkSchema(IDvalidatie), resultValidator, cor
         if (ordercheck.length === 0){
             return response.status(404).send({msg: "Order not found"})
         }
+        const [orderCheck2] = await pool.query('SELECT * FROM ordered_products Where OrderID = ?', [orderid]);
+        if (orderCheck2.length === 0){
+            return response.status(404).send({msg: "No ordered products found with given order ID"})
+        }
+
         else
         await pool.query('DELETE FROM Orders WHERE OrderID = ?', [orderid]);
-        return response.status(204).send({msg: "Order is deleted"});
+        await pool.query('DELETE FROM ordered_products WHERE OrderID = ?', [orderid]);
+        return response.status(204).send({msg: "order and products are deleted."});
 
     } catch (error) {
         console.error('Database error:', error);
