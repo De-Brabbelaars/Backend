@@ -718,3 +718,83 @@ export const receptenCreateValidatie = {
     },
 
 };
+
+
+
+export const receptenPatchValidatie = {
+    Name: {
+        ...notEmptyValidation('Name'),
+        optional: true,
+        ...isStringValidation('Name'),
+        ...isLengthValidation(3, 32, 'Name'),
+    },
+    AssetsURL: {
+        optional: true,
+        ...notEmptyValidation('AssetsURl'),
+        ...isStringValidation('AssetsURL'),
+        ...isLengthValidation(10, 100, 'AssetsURL'),
+    },
+    PeopleServed: {
+        optional: true,
+        ...notEmptyValidation('PeopleServed'),
+        ...isStringValidation('PeopleServed'),
+        ...isLengthValidation(1, 8, 'PeopleServed'),
+    },
+    PrepTime: {
+        optional: true,
+        matches: {
+            options: [/^\d{2}:\d{2}$/],
+            errorMessage: "Time must be in HH:MM format",
+        },
+        ...notEmptyValidation('PrepTime'),
+        ...isStringValidation('PrepTime'),
+        ...isLengthValidation(1, 100, 'PrepTime'),
+    },
+
+    
+
+};
+
+export const receptenPartsValidatie = {
+    RecipeID: {
+        ...notEmptyValidation('RecipeID'),
+        optional: false,
+        ...isStringValidation('RecipeID'),
+        ...isLengthValidation(1, 100, 'RecipeID'),
+    },
+    ProductID: {
+        optional: false,
+        ...notEmptyValidation('ProductID'),
+        ...isStringValidation('ProductID'),
+        ...isLengthValidation(1, 100, 'ProductID'),
+    },
+    Amount: {
+        optional: false,
+        ...notEmptyValidation('Amount'),
+        ...isStringValidation('Amount'),
+        ...isLengthValidation(1, 10, 'Amount'),
+    },
+};
+
+
+
+export const receptenPartsPatchValidatie = {
+    RecipeID: {
+        ...notEmptyValidation('RecipeID'),
+        optional: true,
+        ...isStringValidation('RecipeID'),
+        ...isLengthValidation(1, 100, 'RecipeID'),
+    },
+    ProductID: {
+        optional: true,
+        ...notEmptyValidation('ProductID'),
+        ...isStringValidation('ProductID'),
+        ...isLengthValidation(1, 100, 'ProductID'),
+    },
+    Amount: {
+        optional: true,
+        ...notEmptyValidation('Amount'),
+        ...isStringValidation('Amount'),
+        ...isLengthValidation(1, 10, 'Amount'),
+    },
+};

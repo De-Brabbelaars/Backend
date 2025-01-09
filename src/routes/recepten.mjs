@@ -1,7 +1,7 @@
 import { response, Router } from "express";
 import { checkSchema, matchedData, validationResult } from "express-validator";
 import pool from "../postgress/db.mjs";
-import { receptenCreateValidatie, IDvalidatie} from "../utils/validationschemas.mjs";
+import { receptenCreateValidatie, IDvalidatie, receptenPatchValidatie} from "../utils/validationschemas.mjs";
 import { resultValidator } from "../utils/middelwares.mjs";
 import cors from 'cors';
 import { corsOptions } from "../utils/middelwares.mjs";
@@ -77,38 +77,39 @@ router.get('/api/recepten', cors(corsOptions), async (request, response) => {
 router.put ('/api/recepten/:id', checkSchema(receptenCreateValidatie),  resultValidator, cors(corsOptions), async (request, response) => {
     // gevalideerde data wordt opgeslagen in data variabelen
     const data = matchedData(request); 
-    const ProductID = request.params.id;
+    const recipeID = request.params.id;
 
     try {
         
-        const [exsisting_product] = await pool.query(
-            `SELECT * from recipes WHERE Name = ?`,
-            [data.Name]
+        const [exsisting_recipes] = await pool.query(
+            `SELECT * from recipes WHERE RecipesID = ?`,
+            [recipeID]
         );
         
-        if(exsisting_product.length !== 0){
-            return response.status(400).send({msg: 'recipes name already exsists'})
+        if(exsisting_recipes.length === 0){
+            return response.status(400).send({msg: 'No recipes found with given ID'})
         }
 
-        const [invalid_category_id] = await pool.query(
-            `SELECT * from recipes_categories WHERE RecipesID = ?`,
-            [data.recipesID]
-        );
-        
-        if(invalid_category_id.length === 0){
-            return response.status(400).send({msg: 'invalid recipes ID'})
+        const [exsisting_recipes_name] = await pool.query(
+            `SELECT * from recipes WHERE Name = ?`,
+            [data.Name]
+        )
+
+        if (exsisting_recipes_name.length > 0) {
+            return response.status(400).send({ msg: "Name already exists" });
         }
+  
 
         const [updatedRecipes] = await pool.query(
             `UPDATE recipes
-             SET RecipesID = ?, AssetsURL = ?, Name = ?, PeopleServed = ?, PrepTime = ?, WHERE ProductID = ?`, // SQL query om een gebruiker toe te voegen
-             [data.RecipesID, data.AssetsURL, data.Name, data.PeopleServed, data.PrepTime, ProductID] // De waarden die in de query moeten worden ingevuld
+             SET AssetsURL = ?, Name = ?, PeopleServed = ?, PrepTime = ?, WHERE recipesID = ?`, // SQL query om een gebruiker toe te voegen
+             [data.AssetsURL, data.Name, data.PeopleServed, data.PrepTime, recipeID] // De waarden die in de query moeten worden ingevuld
         );
         
         if (updatedRecipes.affectedRows === 0) {
-            return response.status(404).send({ msg: 'Recipe not found' });  // Als er geen rijen zijn bijgewerkt stuur 404 status
+            return response.status(404).send({ msg: 'No data updated' });  // Als er geen rijen zijn bijgewerkt stuur 404 status
         }
-        return response.status(200).send({ msg: 'Recipe updated successfully' }); //false run 200 status
+        return response.status(200).send({ msg: 'Data updated successfully' }); //false run 200 status
 
     } catch (error) {
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
@@ -122,16 +123,16 @@ router.put ('/api/recepten/:id', checkSchema(receptenCreateValidatie),  resultVa
 
 
 
-router.patch ('/api/recepten', checkSchema(receptenCreateValidatie),  checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
+router.patch ('/api/recepten/:id', checkSchema(receptenPatchValidatie),  checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
     // gevalideerde data wordt opgeslagen in data variabelen
     const data = matchedData(request); 
-    const ProductID = request.params.id;
+    const recipeID = request.params.id;
 
     try {
-        const [existingRecipe] = await pool.query('SELECT * FROM recipes WHERE ProductID = ?', [ProductID]);
+        const [existingRecipe] = await pool.query('SELECT * FROM recipes WHERE recipeID = ?', [recipeID]);
 
-        if (existingProduct.length === 0) {
-            return response.status(404).send({msg: "Product not found"}); 
+        if (existingRecipe.length === 0) {
+            return response.status(404).send({msg: "Recipe not found"}); 
         }
 
         // toevoegen van dynamische velden.
@@ -139,41 +140,38 @@ router.patch ('/api/recepten', checkSchema(receptenCreateValidatie),  checkSchem
         const teUpdatenWaarden = [];
 
         // controleren van alle velden en waarden.
-        if(data.CategoryID){
-            teUpdatenVelden.push(`CategoryID = ?`);
-            teUpdatenWaarden.push(data.CategoryID);
+        if(data.recipeID){
+            teUpdatenVelden.push(`recipeID = ?`);
+            teUpdatenWaarden.push(data.recipeID);
         }
         if(data.AssetsURL){
             teUpdatenVelden.push(`AssetsURL = ?`);
             teUpdatenWaarden.push(data.AssetsURL);
         }
-        if(data.Price){
-            teUpdatenVelden.push(`Price = ?`);
-            teUpdatenWaarden.push(data.Price);
-        }
-        if(data.Size){
-            teUpdatenVelden.push(`Size = ?`);
-            teUpdatenWaarden.push(data.Size);
-        }
-        if(data.AmountInStock){
-            teUpdatenVelden.push(`AmountInStock = ?`);
-            teUpdatenWaarden.push(data.AmountInStock);
-        }
         if(data.Name){
             teUpdatenVelden.push(`Name = ?`);
             teUpdatenWaarden.push(data.Name);
+          }
+        if(data.PeopleServed){
+            teUpdatenVelden.push(`PeopleServed = ?`);
+            teUpdatenWaarden.push(data.PeopleServed);
         }
+        if(data.PrepTime){
+            teUpdatenVelden.push(`PrepTime = ?`);
+            teUpdatenWaarden.push(data.PrepTime);
+        }
+    
 
 
         //ProductID toevoegen aan de lijst
-        teUpdatenWaarden.push(ProductID);
+        teUpdatenWaarden.push(recipeID);
 
         if (teUpdatenVelden === 0){
             return response.status(400).send({msg: "there are no fields to update"});
         } 
 
         // Stap 1: Controleer of de naam van het product al bestaat in de database
-        const [existingName] = await pool.query(`SELECT * FROM products WHERE Name = ?`, [data.Name]); 
+        const [existingName] = await pool.query(`SELECT * FROM recipe WHERE Name = ?`, [data.Name]); 
 
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
         if (existingName.length > 0) {
@@ -182,18 +180,18 @@ router.patch ('/api/recepten', checkSchema(receptenCreateValidatie),  checkSchem
 
         //opstellen van de query
         const sqlQuery = `
-            UPDATE products
-            SET ${teUpdatenVelden.join(', ')} WHERE ProductID = ?
+            UPDATE recipe
+            SET ${teUpdatenVelden.join(', ')} WHERE RecipesID = ?
         `;
 
         //uitvoeren van de query
-        const [updatedProduct] = await pool.query(sqlQuery, teUpdatenWaarden);
+        const [updatedRecipes] = await pool.query(sqlQuery, teUpdatenWaarden);
 
-        if (updatedProduct.affectedRows === 0 ){
+        if (updatedRecipes.affectedRows === 0 ){
             return response.status(400).send({msg: "no given values to update"})
         }
 
-        return response.status(200).send({msg: "product is updated"})
+        return response.status(200).send({msg: "recipes is updated"})
 
     } catch (error) {
          // Foutafhandeling: Log de fout en stuur een interne serverfout terug
@@ -207,16 +205,16 @@ router.patch ('/api/recepten', checkSchema(receptenCreateValidatie),  checkSchem
 
 
 
-router.delete('/api/products/:id', checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
+router.delete('/api/recipe/:id', checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
     const data = matchedData(request);
-    const productID = data.id;
+    const recipeID = data.id;
     try {
-        const [checkenProduct] = await pool.query(`SELECT * FROM products WHERE ProductID = ?`, [productID]);
-        if (checkenProduct.length === 0){
-            return response.status(404).send({msg: "No Product found with given Product id"});
+        const [checkenRecipe] = await pool.query(`SELECT * FROM recipe WHERE recipeID = ?`, [recipeID]);
+        if (checkenRecipe.length === 0){
+            return response.status(404).send({msg: "No recipe found with given recipe id"});
         } else {
-            await pool.query(`DELETE FROM products WHERE ProductID = ?`, [productID]);
-            return response.status(200).send({msg: "Product is deleted"});
+            await pool.query(`DELETE FROM recipe WHERE recipeID = ?`, [recipeID]);
+            return response.status(200).send({msg: "Recipe is deleted"});
         }
     } catch (error) {
         return response.status(500).send({ msg: "Server error" });
