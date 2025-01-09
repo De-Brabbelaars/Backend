@@ -49,7 +49,15 @@ router.post('/api/recepten',  checkSchema(receptenCreateValidatie), resultValida
   }
 });
 
-
+/**
+ * @swagger
+ * /api/recepten
+ *  post:
+ *      Tags:
+ * 
+ * 
+ * 
+ */
 
 
 
