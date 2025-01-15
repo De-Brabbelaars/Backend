@@ -809,19 +809,28 @@ export const receptenPartsPatchValidatie = {
     RecipeID: {
         ...notEmptyValidation('RecipeID'),
         optional: true,
-        ...isStringValidation('RecipeID'),
+        isInt: {
+            options: {min: 0},
+            errorMessage: "RecipeID moet een integer zijn"
+        },
         ...isLengthValidation(1, 100, 'RecipeID'),
     },
     ProductID: {
         optional: true,
         ...notEmptyValidation('ProductID'),
-        ...isStringValidation('ProductID'),
+        isInt: {
+            options: {min: 0},
+            errorMessage: "ProductID moet een integer zijn"
+        },
         ...isLengthValidation(1, 100, 'ProductID'),
     },
     Amount: {
         optional: true,
         ...notEmptyValidation('Amount'),
-        ...isStringValidation('Amount'),
+        isInt: {
+            options: {min: 0},
+            errorMessage: "Amount moet een integer zijn",
+        },  
         ...isLengthValidation(1, 10, 'Amount'),
     },
 };
