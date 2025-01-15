@@ -1,7 +1,7 @@
 import { response, Router } from "express";
 import { checkSchema, matchedData, validationResult } from "express-validator";
 import pool from "../postgress/db.mjs";
-import { receptenPartsValidatie, IDvalidatie, receptenPatchValidatie} from "../utils/validationschemas.mjs";
+import { receptenPartsValidatie, IDvalidatie, receptenPartsPatchValidatie} from "../utils/validationschemas.mjs";
 import { resultValidator } from "../utils/middelwares.mjs";
 import cors from 'cors';
 import { corsOptions } from "../utils/middelwares.mjs";
