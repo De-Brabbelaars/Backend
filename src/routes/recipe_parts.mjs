@@ -9,6 +9,82 @@ import { corsOptions } from "../utils/middelwares.mjs";
 
 const router = Router();
 
+
+/**
+ * @swagger
+ * /api/recipe_parts:
+ *   post:
+ *     tags:
+ *       - Recipe Parts
+ *     summary: Add a new recipe part
+ *     description: |
+ *       This endpoint adds a new recipe part to the database. It validates all required fields and ensures that the recipe name is unique.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - RecipeID
+ *               - ProductID
+ *               - Amount
+ *             properties:
+ *               RecipeID:
+ *                 type: integer
+ *                 description: ID of the recipe
+ *                 example: 1
+ *               ProductID:
+ *                 type: integer
+ *                 description: ID of the product
+ *                 example: 21
+ *               Amount:
+ *                 type: number
+ *                 description: Amount of the product required
+ *                 example: 2
+ *     responses:
+ *       201:
+ *         description: Recipe part created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recipeID:
+ *                   type: integer
+ *                   description: ID of the recipe
+ *                   example: 123
+ *                 productID:
+ *                   type: integer
+ *                   description: ID of the product
+ *                   example: 456
+ *                 amount:
+ *                   type: number
+ *                   description: Amount of the product required
+ *                   example: 2
+ *       400:
+ *         description: Bad Request - Name already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Name already exists
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: Server error
+ */
+
+
 router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultValidator, cors(corsOptions), async (request, response) => {
     // gevalideerde data wordt opgeslagen in data variabelen
     const data = matchedData(request); 
@@ -29,7 +105,7 @@ router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultVal
   
         // Stap 3: Maak een object aan met de nieuwe gebruiker inclusief hun gegenereerde id
         const newRecipe = {
-            recipeID: data.RecipeId,
+            recipeID: data.RecipeID,
             productID: data.ProductID,
             amount: data.Amount,
         };
@@ -43,6 +119,7 @@ router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultVal
         return response.status(500).send({ msg: "Server error" });
     }
   });
+
 
 
 
