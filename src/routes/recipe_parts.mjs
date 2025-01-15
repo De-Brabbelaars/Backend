@@ -1,7 +1,7 @@
 import { response, Router } from "express";
 import { checkSchema, matchedData, validationResult } from "express-validator";
 import pool from "../postgress/db.mjs";
-import { receptenPartsValidatie, IDvalidatie, receptenPartsPatchValidatie} from "../utils/validationschemas.mjs";
+import { receptenPartsValidatie, IDvalidatie, receptenPatchValidatie} from "../utils/validationschemas.mjs";
 import { resultValidator } from "../utils/middelwares.mjs";
 import cors from 'cors';
 import { corsOptions } from "../utils/middelwares.mjs";
@@ -33,15 +33,15 @@ const router = Router();
  *               RecipeID:
  *                 type: integer
  *                 description: ID of the recipe
- *                 example: 1
+ *                 example: 2
  *               ProductID:
  *                 type: integer
  *                 description: ID of the product
- *                 example: 21
+ *                 example: 1
  *               Amount:
- *                 type: number
+ *                 type: integer
  *                 description: Amount of the product required
- *                 example: 2
+ *                 example: 1
  *     responses:
  *       201:
  *         description: Recipe part created successfully
@@ -53,15 +53,15 @@ const router = Router();
  *                 recipeID:
  *                   type: integer
  *                   description: ID of the recipe
- *                   example: 123
+ *                   example: 2
  *                 productID:
  *                   type: integer
  *                   description: ID of the product
- *                   example: 456
+ *                   example: 1
  *                 amount:
- *                   type: number
+ *                   type: integer
  *                   description: Amount of the product required
- *                   example: 2
+ *                   example: 1
  *       400:
  *         description: Bad Request - Name already exists
  *         content:

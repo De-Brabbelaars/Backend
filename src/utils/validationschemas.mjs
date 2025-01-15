@@ -777,19 +777,28 @@ export const receptenPartsValidatie = {
     RecipeID: {
         ...notEmptyValidation('RecipeID'),
         optional: false,
-        ...isStringValidation('RecipeID'),
+    isInt: {
+        options: {min: 0},
+        errorMessage: "RecipeID moet een integer zijn"
+    },
         ...isLengthValidation(1, 100, 'RecipeID'),
     },
     ProductID: {
         optional: false,
         ...notEmptyValidation('ProductID'),
-        ...isStringValidation('ProductID'),
+        isInt: {
+            options: {min: 0},
+            errorMessage: "ProductID moet een integer zijn"
+        },
         ...isLengthValidation(1, 100, 'ProductID'),
     },
     Amount: {
         optional: false,
         ...notEmptyValidation('Amount'),
-        ...isStringValidation('Amount'),
+        isInt: {
+            options: {min: 0},
+            errorMessage: "Amount moet een integer zijn",
+        },  
         ...isLengthValidation(1, 10, 'Amount'),
     },
 };
