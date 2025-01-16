@@ -89,36 +89,44 @@ router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultVal
     // gevalideerde data wordt opgeslagen in data variabelen
     const data = matchedData(request); 
     try {
-  
-        const [existingName] = await pool.query(`SELECT * FROM recipes WHERE Name = ?`, [data.Name]); 
-  
+        // Stap 1: Controleer of de e-mail van de nieuwe gebruiker al bestaat in de database
+        // existingUser bevat de eerste gevonden gebruiker die voldoet aan data.email of undefined als er geen match is.
+        const [existingProductID] = await pool.query(`SELECT * FROM products WHERE ProductID = ?`, [data.ProductID]); 
+
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
-        if (existingName.length > 0) {
-            return response.status(400).send({ msg: "Name already exists" });
+        if (existingProductID.length === 0) {
+            return response.status(400).send({ msg: "No product found with given product ID" });
         }
-  
+
+        const [existingRecipeID] = await pool.query(`SELECT * FROM recipes WHERE RecipeID = ?`, [data.RecipeID]); 
+
+        // Als de e-mail al bestaat, stuur dan een foutmelding terug
+        if (existingRecipeID.length === 0) {
+            return response.status(400).send({ msg: "No recipe found with given ID" });
+        }
+
         // Stap 2: Voeg de nieuwe gebruiker toe aan de database
-        const [result] = await pool.query(
-            `INSERT INTO recipes (RecipeID, ProductID, Amount) VALUES (?, ?, ?)`, // SQL query om een gebruiker toe te voegen
-            [data.RecipeID, data.ProductID, data.Amount] // De waarden die in de query moeten worden ingevuld
+        await pool.query(
+            `INSERT INTO recipe_parts (ProductID, RecipeID, Amount) VALUES (?, ?, ?)`, // SQL query om een gebruiker toe te voegen
+            [data.ProductID, data.RecipeID, data.Amount,] // De waarden die in de query moeten worden ingevuld
         );
-  
+
         // Stap 3: Maak een object aan met de nieuwe gebruiker inclusief hun gegenereerde id
-        const newRecipe = {
+        const newRecipe_parts = {
+            productid: data.ProductID,
             recipeID: data.RecipeID,
-            productID: data.ProductID,
             amount: data.Amount,
         };
-  
+
         // Stap 4: Stuur de nieuwe gebruiker als antwoord terug naar de client
-        return response.status(201).send(newRecipe); // HTTP status 201 betekent 'Created'
-  
+        return response.status(201).send(newRecipe_parts); // HTTP status 201 betekent 'Created'
+
     } catch (err) {
-  
+
         // Als er een andere fout is, stuur dan een generieke serverfout
         return response.status(500).send({ msg: "Server error" });
     }
-  });
+});
 
 
 
