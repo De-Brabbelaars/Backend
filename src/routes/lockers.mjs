@@ -115,7 +115,7 @@ router.post('/api/lockers',  checkSchema(LockerValidation), resultValidator, cor
         return response.status(201).send(usingLocker); // HTTP status 201 betekent 'Created'
 
     } catch (err) {
-
+        console.log(error.message);
         return response.status(500).send({ msg: "Server error" });
     }
 });
@@ -181,6 +181,7 @@ router.get('/api/lockers', cors(corsOptions), async (request, response) => {
         }
         return response.status(200).json(getlockers);
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -261,6 +262,7 @@ router.get('/api/lockers/:id', checkSchema(IDvalidatie), resultValidator, cors(c
             return response.status(404).send({ msg: 'No locker found with given Locker ID' });
         }
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -366,6 +368,7 @@ router.put ('/api/lockers/:id', checkSchema(UpdateLockerValidation),  checkSchem
         return response.status(200).send({ msg: 'Locker updated successfully' }); //false run 200 status
         
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -507,6 +510,7 @@ router.patch ('/api/lockers/:id', checkSchema(UpdateLockerpatchValidation),  che
         return response.status(200).send({msg: "Locker is updated"})
 
     } catch (error) {
+        console.log(error.message);
          // Foutafhandeling: Log de fout en stuur een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -580,6 +584,7 @@ router.delete ('/api/lockers/:id', checkSchema(IDvalidatie), resultValidator, co
         return response.status(204).send({msg: "Locker is deleted"});
 
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }

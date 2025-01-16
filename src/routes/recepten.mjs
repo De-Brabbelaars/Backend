@@ -132,8 +132,9 @@ router.post('/api/recepten',  checkSchema(receptenCreateValidatie), resultValida
       return response.status(201).send(newRecipe); // HTTP status 201 betekent 'Created'
 
   } catch (err) {
-      // Als er een andere fout is, stuur dan een generieke serverfout
-      return response.status(500).send({ msg: "Server error" });
+    console.log(error.message);
+    // Als er een andere fout is, stuur dan een generieke serverfout
+    return response.status(500).send({ msg: "Server error" });
   }
 });
 
@@ -211,6 +212,7 @@ router.get('/api/recepten', cors(corsOptions), async (request, response) => {
         }
         return response.status(200).json(ophalenRecepten);
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -346,6 +348,7 @@ router.put ('/api/recepten/:id', checkSchema(receptenCreateValidatie),  resultVa
         return response.status(200).send({ msg: 'Data updated successfully' }); //false run 200 status
 
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -502,6 +505,7 @@ router.patch('/api/recepten/:id', checkSchema(receptenPatchValidatie), checkSche
         return response.status(200).send({ msg: "Recipe is updated" });
 
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -571,6 +575,7 @@ router.delete('/api/recipe/:id', checkSchema(IDvalidatie), resultValidator, cors
             return response.status(200).send({msg: "Recipe is deleted"});
         }
     } catch (error) {
+        console.log(error.message);
         return response.status(500).send({ msg: "Server error" });
     }
 });

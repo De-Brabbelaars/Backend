@@ -122,7 +122,7 @@ router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultVal
         return response.status(201).send(newRecipe_parts); // HTTP status 201 betekent 'Created'
 
     } catch (err) {
-
+        console.log(error.message);
         // Als er een andere fout is, stuur dan een generieke serverfout
         return response.status(500).send({ msg: "Server error" });
     }
@@ -141,6 +141,7 @@ router.get('/api/recipe_parts', cors(corsOptions), async (request, response) => 
     }
     return response.status(200).json(ophalenReceptenParts);
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -189,6 +190,7 @@ router.put ('/api/recipe_parts/:id', checkSchema(receptenPartsValidatie),  resul
         return response.status(200).send({ msg: 'Data updated successfully' }); //false run 200 status
 
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -262,6 +264,7 @@ router.patch ('/api/recipe_parts/:id', checkSchema(receptenPartsPatchValidatie),
         return response.status(200).send({msg: "recipes is updated"})
 
     } catch (error) {
+        console.log(error.message);
          // Foutafhandeling: Log de fout en stuur een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -282,6 +285,7 @@ router.delete('/api/recipe_parts/:id', checkSchema(IDvalidatie), resultValidator
             return response.status(200).send({msg: "Recipe is deleted"});
         }
     } catch (error) {
+        console.log(error.message);
         return response.status(500).send({ msg: "Server error" });
     }
 });

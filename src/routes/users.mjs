@@ -129,6 +129,7 @@ router.get('/api/users', checkSchema(filterValidationSchema), resultValidator, c
         return response.json(users);
 
     } catch (err) {
+        console.log(error.message);
         console.error('Database error:', err.message);
         return response.status(500).send('Server error'); // Stuur een serverfoutmelding terug
     }
@@ -288,7 +289,7 @@ router.post('/api/users',  checkSchema(createuserValidationSchema), resultValida
         return response.status(201).send(newUser); // HTTP status 201 betekent 'Created'
 
     } catch (err) {
-
+        console.log(error.message);
         // Als er een andere fout is, stuur dan een generieke serverfout
         return response.status(500).send({ msg: "Server error" });
     }
@@ -386,6 +387,7 @@ router.get('/api/users/:id', checkSchema(IDvalidatie), resultValidator, cors(cor
             return response.status(404).send({ msg: 'User not found' });
         }
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -518,6 +520,7 @@ router.put ('/api/users/:id', checkSchema(createuserValidationSchema),  checkSch
         return response.status(200).send({ msg: 'User updated successfully' }); //false run 200 status
 
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -709,6 +712,7 @@ router.patch ('/api/users/:id', checkSchema(updateUserValidationSchema),  checkS
         return response.status(200).send({msg: "user is updated"})
 
     } catch (error) {
+        console.log(error.message);
          // Foutafhandeling: Log de fout en stuur een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -781,6 +785,7 @@ router.delete ('/api/users/:id', checkSchema(IDvalidatie), resultValidator, cors
             return response.status(204).send({msg: "user is verwijderd"});
 
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }

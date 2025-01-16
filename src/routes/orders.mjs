@@ -168,7 +168,7 @@ router.post('/api/orders',  checkSchema(createOrderValidation), resultValidator,
         return response.status(201).send(newOrder); // HTTP status 201 betekent 'Created'
 
     } catch (err) {
-
+        console.log(error.message);
         return response.status(500).send({ msg: "Server error" });
     }
 });
@@ -256,6 +256,7 @@ router.get('/api/orders', cors(corsOptions), async (request, response) => {
         }
         return response.status(200).json(getorders);
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -358,6 +359,7 @@ router.get('/api/orders/:id', checkSchema(IDvalidatie), resultValidator, cors(co
             return response.status(404).send({ msg: 'No order found with given order ID' });
         }
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -503,6 +505,7 @@ router.put ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchema(
         return response.status(200).send({ msg: 'Order updated successfully' }); //false run 200 status
         
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -688,6 +691,7 @@ router.patch ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchem
         return response.status(200).send({msg: "order is updated"})
 
     } catch (error) {
+        console.log(error.message);
          // Foutafhandeling: Log de fout en stuur een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -770,6 +774,7 @@ router.delete ('/api/orders/:id', checkSchema(IDvalidatie), resultValidator, cor
         return response.status(204).send({msg: "order and products are deleted."});
 
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }

@@ -90,7 +90,8 @@ router.post('/api/categories', checkSchema(categoryValidationSchema), cors(corsO
 
         return response.status(201).send(newcategory);
     } catch (error) {
-          return response.status(500).send({ msg: "Server error" });
+        console.log(error.message);
+        return response.status(500).send({ msg: "Server error" });
     }
 });
 
@@ -153,6 +154,7 @@ router.get('/api/categories', cors(corsOptions), async (request, response) => {
         }
         return response.status(200).json(ophalencategoryProducten);
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -259,6 +261,7 @@ router.get('/api/categories/:id', checkSchema(IDvalidatie), cors(corsOptions), r
             return response.status(404).send({ msg: 'No products found for given category ID' });
         }
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -338,6 +341,7 @@ router.delete('/api/categories/:id', checkSchema(IDvalidatie), cors(corsOptions)
             return response.status(200).send({ msg: "Category successfully deleted" });
         }
     } catch (error) {
+        console.log(error.message);
         return response.status(500).send({ msg: "Server error" });
     }
 });
@@ -446,6 +450,7 @@ router.put ('/api/categories/:id', checkSchema(categoryValidationSchema), cors(c
         return response.status(200).send({ msg: 'Category updated successfully' }); //false run 200 status
 
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });

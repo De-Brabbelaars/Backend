@@ -198,6 +198,7 @@ router.get('/api/orderd_products', cors(corsOptions), async (request, response) 
         }
         return response.status(200).json(getorderd_products);
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -280,6 +281,7 @@ router.get('/api/orderd_products/:id', checkSchema(IDvalidatie), resultValidator
             return response.status(404).send({ msg: 'No ordered products found with given ID' });
         }
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -402,6 +404,7 @@ router.put ('/api/orderd_products/:id', checkSchema(createorderdProductValidatio
         return response.status(200).send({ msg: 'Ordered_products updated successfully' }); //false run 200 status
         
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -562,6 +565,7 @@ router.patch('/api/ordered_products/:orderId/:productId', checkSchema(updateorde
         return response.status(200).send({ msg: "Ordered product updated successfully" });
 
     } catch (error) {
+        console.log(error.message);
         // Foutafhandeling
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -647,6 +651,7 @@ router.delete('/api/ordered_products/:orderId/:productId', checkSchema(orderIDVa
         return response.status(404).send({ msg: "No ordered products found with given order and product id" });
 
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }

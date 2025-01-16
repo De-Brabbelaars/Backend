@@ -157,6 +157,7 @@ router.post('/api/products', checkSchema(productValidationSchema), resultValidat
         return response.status(201).send(Newproduct);
         
     } catch (error) {
+        console.log(error.message);
         console.error(error);
         return response.status(500).send({ msg: "Server error" });
     }
@@ -236,6 +237,7 @@ router.get('/api/products', cors(corsOptions), async (request, response) => {
         }
         return response.status(200).json(ophalenProducten);
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -340,6 +342,7 @@ router.get('/api/products/:id', checkSchema(IDvalidatie), resultValidator, cors(
             return response.status(404).send({ msg: 'product not found' });
         }
     } catch (error) {
+        console.log(error.message);
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
@@ -484,6 +487,7 @@ router.put ('/api/products/:id', checkSchema(productValidationSchema),  checkSch
         return response.status(200).send({ msg: 'Product updated successfully' }); //false run 200 status
 
     } catch (error) {
+        console.log(error.message);
         // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -659,6 +663,7 @@ router.patch ('/api/products/:id', checkSchema(productupdateValidationSchema),  
         return response.status(200).send({msg: "product is updated"})
 
     } catch (error) {
+        console.log(error.message);
          // Foutafhandeling: Log de fout en stuur een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
@@ -729,6 +734,7 @@ router.delete('/api/products/:id', checkSchema(IDvalidatie), resultValidator, co
             return response.status(200).send({msg: "Product is deleted"});
         }
     } catch (error) {
+        console.log(error.message);
         return response.status(500).send({ msg: "Server error" });
     }
 });
