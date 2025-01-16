@@ -73,13 +73,13 @@ router.post('/api/categories', checkSchema(categoryValidationSchema), cors(corsO
     const data = matchedData(request); 
 
     try {
-        const [existingCategory] = await pool.query(`SELECT * FROM product_categories WHERE Name = ?`, [data.Name]); 
+        const [existingCategory] = await pool.query(`SELECT * FROM Product_categories WHERE Name = ?`, [data.Name]); 
         if (existingCategory.length > 0) {
             return response.status(400).send({ msg: "Category already exists" });
         }
 
         const [NewCategory] = await pool.query(
-            `INSERT INTO product_categories (Name) VALUES (?)`, 
+            `INSERT INTO Product_categories (Name) VALUES (?)`, 
             [data.Name,]
         );
 
@@ -148,7 +148,7 @@ router.post('/api/categories', checkSchema(categoryValidationSchema), cors(corsO
 
 router.get('/api/categories', cors(corsOptions), async (request, response) => {
     try {
-        const [ophalencategoryProducten] = await pool.query(`SELECT * FROM product_categories`);
+        const [ophalencategoryProducten] = await pool.query(`SELECT * FROM Product_categories`);
         if (ophalencategoryProducten.length === 0) {
             return response.status(404).send({ msg: "No categories found" });
         }
@@ -253,7 +253,7 @@ router.get('/api/categories/:id', checkSchema(IDvalidatie), cors(corsOptions), r
     const categoryID = data.id;
     
     try {
-        const [existingCategory] = await pool.query('SELECT * FROM products WHERE CategoryID = ?', [categoryID]);
+        const [existingCategory] = await pool.query('SELECT * FROM Products WHERE CategoryID = ?', [categoryID]);
         
         if (existingCategory.length > 0) {
             return response.status(200).json(existingCategory);
@@ -333,11 +333,11 @@ router.delete('/api/categories/:id', checkSchema(IDvalidatie), cors(corsOptions)
     const categoryID = data.id;
 
     try {
-        const [checkenCategory] = await pool.query(`SELECT * FROM product_categories WHERE CategoryID = ?`, [categoryID]);
+        const [checkenCategory] = await pool.query(`SELECT * FROM Product_categories WHERE CategoryID = ?`, [categoryID]);
         if (checkenCategory.length === 0) {
             return response.status(404).send({ msg: "No category found with given ID" });
         } else {
-            await pool.query(`DELETE FROM product_categories WHERE CategoryID = ?`, [categoryID]);
+            await pool.query(`DELETE FROM Product_categories WHERE CategoryID = ?`, [categoryID]);
             return response.status(200).send({ msg: "Category successfully deleted" });
         }
     } catch (error) {
@@ -430,7 +430,7 @@ router.put ('/api/categories/:id', checkSchema(categoryValidationSchema), cors(c
     try {
         
         const [exsisting_category] = await pool.query(
-            `SELECT * from product_categories WHERE Name = ?`,
+            `SELECT * from Product_categories WHERE Name = ?`,
             [data.Name]
         );
         
@@ -439,7 +439,7 @@ router.put ('/api/categories/:id', checkSchema(categoryValidationSchema), cors(c
         }
 
         const [updatedCategory] = await pool.query(
-            `UPDATE product_categories
+            `UPDATE Product_categories
              SET Name = ? WHERE CategoryID = ?`, // SQL query om een gebruiker toe te voegen
             [data.Name, CategoryID] // De waarden die in de query moeten worden ingevuld
         );
