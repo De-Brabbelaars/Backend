@@ -127,20 +127,20 @@ router.post('/api/products', checkSchema(productValidationSchema), resultValidat
     const data = matchedData(request); 
 
     try {
-        const [existingproduct] = await pool.query(`SELECT * FROM products WHERE Name = ?`, [data.Name]); 
+        const [existingproduct] = await pool.query(`SELECT * FROM Products WHERE Name = ?`, [data.Name]); 
 
         if (existingproduct.length > 0) {
             return response.status(400).send({ msg: "product already exists" });
         }
 
-        const [existingcategoryid] = await pool.query(`SELECT * FROM product_categories WHERE CategoryID = ?`, [data.CategoryID]); 
+        const [existingcategoryid] = await pool.query(`SELECT * FROM Product_categories WHERE CategoryID = ?`, [data.CategoryID]); 
 
         if (existingcategoryid.length === 0) {
             return response.status(404).send({ msg: "invalid category ID" });
         }
 
         const [NewProduct] = await pool.query(
-            `INSERT INTO products (CategoryID, AssetsURL, Price, Size, AmountInStock, Name) VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO Products (CategoryID, AssetsURL, Price, Size, AmountInStock, Name) VALUES (?, ?, ?, ?, ?, ?)`,
             [data.CategoryID, data.AssetsURL, data.Price, data.Size, data.AmountInStock, data.Name]
         );
 
@@ -231,7 +231,7 @@ router.post('/api/products', checkSchema(productValidationSchema), resultValidat
 
 router.get('/api/products', cors(corsOptions), async (request, response) => {
     try {
-        const [ophalenProducten] = await pool.query(`SELECT * FROM products`)
+        const [ophalenProducten] = await pool.query(`SELECT * FROM Products`)
         if (ophalenProducten.length === 0){
             return response.status(404).send({msg: "No products found"})
         }
@@ -334,7 +334,7 @@ router.get('/api/products/:id', checkSchema(IDvalidatie), resultValidator, cors(
     const productID = data.id;
     
     try {
-        const [existingProduct] = await pool.query('SELECT * FROM products WHERE ProductID = ?', [productID]);
+        const [existingProduct] = await pool.query('SELECT * FROM Products WHERE ProductID = ?', [productID]);
         
         if (existingProduct.length > 0) {
             return response.status(200).json(existingProduct);
@@ -458,7 +458,7 @@ router.put ('/api/products/:id', checkSchema(productValidationSchema),  checkSch
     try {
         
         const [exsisting_product] = await pool.query(
-            `SELECT * from products WHERE Name = ?`,
+            `SELECT * from Products WHERE Name = ?`,
             [data.Name]
         );
         
@@ -467,7 +467,7 @@ router.put ('/api/products/:id', checkSchema(productValidationSchema),  checkSch
         }
 
         const [invalid_category_id] = await pool.query(
-            `SELECT * from product_categories WHERE CategoryID = ?`,
+            `SELECT * from Product_categories WHERE CategoryID = ?`,
             [data.CategoryID]
         );
         
@@ -476,7 +476,7 @@ router.put ('/api/products/:id', checkSchema(productValidationSchema),  checkSch
         }
 
         const [updatedProduct] = await pool.query(
-            `UPDATE products
+            `UPDATE Products
              SET CategoryID = ?, AssetsURL = ?, Price = ?, Size = ?, AmountInStock = ?, Name = ? WHERE ProductID = ?`, // SQL query om een gebruiker toe te voegen
              [data.CategoryID, data.AssetsURL, data.Price, data.Size, data.AmountInStock, data.Name, ProductID] // De waarden die in de query moeten worden ingevuld
         );
@@ -595,7 +595,7 @@ router.patch ('/api/products/:id', checkSchema(productupdateValidationSchema),  
     const ProductID = request.params.id;
 
     try {
-        const [existingProduct] = await pool.query('SELECT * FROM products WHERE ProductID = ?', [ProductID]);
+        const [existingProduct] = await pool.query('SELECT * FROM Products WHERE ProductID = ?', [ProductID]);
 
         if (existingProduct.length === 0) {
             return response.status(404).send({msg: "Product not found"}); 
@@ -640,7 +640,7 @@ router.patch ('/api/products/:id', checkSchema(productupdateValidationSchema),  
         } 
 
         // Stap 1: Controleer of de naam van het product al bestaat in de database
-        const [existingName] = await pool.query(`SELECT * FROM products WHERE Name = ?`, [data.Name]); 
+        const [existingName] = await pool.query(`SELECT * FROM Products WHERE Name = ?`, [data.Name]); 
 
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
         if (existingName.length > 0) {
@@ -649,7 +649,7 @@ router.patch ('/api/products/:id', checkSchema(productupdateValidationSchema),  
 
         //opstellen van de query
         const sqlQuery = `
-            UPDATE products
+            UPDATE Products
             SET ${teUpdatenVelden.join(', ')} WHERE ProductID = ?
         `;
 
@@ -726,11 +726,11 @@ router.delete('/api/products/:id', checkSchema(IDvalidatie), resultValidator, co
     const data = matchedData(request);
     const productID = data.id;
     try {
-        const [checkenProduct] = await pool.query(`SELECT * FROM products WHERE ProductID = ?`, [productID]);
+        const [checkenProduct] = await pool.query(`SELECT * FROM Products WHERE ProductID = ?`, [productID]);
         if (checkenProduct.length === 0){
             return response.status(404).send({msg: "No Product found with given Product id"});
         } else {
-            await pool.query(`DELETE FROM products WHERE ProductID = ?`, [productID]);
+            await pool.query(`DELETE FROM Products WHERE ProductID = ?`, [productID]);
             return response.status(200).send({msg: "Product is deleted"});
         }
     } catch (error) {
