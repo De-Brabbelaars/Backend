@@ -131,11 +131,63 @@ router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultVal
 
 
 
-
+/**
+ * @swagger
+ * /api/recipe_parts:
+ *   get:
+ *     tags:
+ *       - Recipe Parts
+ *     summary: Retrieve all recipe parts
+ *     description: |
+ *       This endpoint retrieves all recipe parts from the database. 
+ *       If no recipe parts are found, it returns a 404 response.
+ *     responses:
+ *       200:
+ *         description: A list of all recipe parts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: Unique identifier for the recipe part.
+ *                     example: 1
+ *                   name:
+ *                     type: string
+ *                     description: Name of the recipe part.
+ *                     example: "Tomato Sauce"
+ *                   description:
+ *                     type: string
+ *                     description: Description of the recipe part.
+ *                     example: "A base sauce for pasta dishes."
+ *       404:
+ *         description: No recipe parts found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "No recipe found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
   
 router.get('/api/recipe_parts', cors(corsOptions), async (request, response) => {
     try {
-    const [ophalenReceptenParts] = await pool.query(`SELECT * FROM recipes`)
+    const [ophalenReceptenParts] = await pool.query(`SELECT * FROM recipe_parts`)
         if (ophalenReceptenParts.length === 0){
             return response.status(404).send({msg: "No recipe found"})
     }
@@ -148,125 +200,314 @@ router.get('/api/recipe_parts', cors(corsOptions), async (request, response) => 
 
 
 
+/**
+ * @swagger
+ * /api/recipe_parts/{id}:
+ *   put:
+ *     tags:
+ *       - Recipe Parts
+ *     summary: Update a recipe part
+ *     description: |
+ *       This endpoint updates the `ProductID` and `Amount` of a recipe part, 
+ *       identified by the `RecipeID` provided in the URL. 
+ *       You can update the `ProductID` and `Amount` of the existing recipe part.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the recipe part to be updated
+ *         schema:
+ *           type: integer
+ *           example: 2
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ProductID:
+ *                 type: integer
+ *                 description: ID of the product.
+ *                 example: 3
+ *               Amount:
+ *                 type: integer
+ *                 description: The amount of the product.
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Recipe part updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'Data updated successfully'
+ *       400:
+ *         description: Invalid input or no data to update
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'No data updated'
+ *       404:
+ *         description: Recipe part not found or no matching records
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'No recipes found with given ID'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'Internal server error'
+ */
 
 
 
-router.put ('/api/recipe_parts/:id', checkSchema(receptenPartsValidatie),  resultValidator, cors(corsOptions), async (request, response) => {
-    // gevalideerde data wordt opgeslagen in data variabelen
-    const data = matchedData(request); 
+
+
+router.put('/api/recipe_parts/:id', checkSchema(receptenPartsPatchValidatie), resultValidator, cors(corsOptions), async (request, response) => {
+    const data = matchedData(request);
     const recipeID = request.params.id;
 
     try {
-        
-        const [exsisting_recipes_parts] = await pool.query(
-            `SELECT * from recipes WHERE RecipesID = ?`,
+        const [existing_recipes_parts] = await pool.query(
+            `SELECT * FROM recipe_parts WHERE RecipeID = ?`,
             [recipeID]
         );
-        
-        if(exsisting_recipes_parts.length === 0){
-            return response.status(400).send({msg: 'No recipes found with given ID'})
+
+        if (existing_recipes_parts.length === 0) {
+            return response.status(404).send({ msg: 'No recipes found with given ID' });
         }
 
-        const [exsisting_recipes_parts_name] = await pool.query(
-            `SELECT * from recipes WHERE Name = ?`,
-            [data.Name]
-        )
-
-        if (exsisting_recipes_parts_name.length > 0) {
-            return response.status(400).send({ msg: "Name already exists" });
-        }
-  
 
         const [updatedRecipes_parts] = await pool.query(
-            `UPDATE recipes
-             SET RecipeID = ?, ProductID = ?, Amount = ?`, // SQL query om een gebruiker toe te voegen
-             [data.RecipeID, data.ProductID, data.Amount] // De waarden die in de query moeten worden ingevuld
+            `UPDATE recipe_parts
+             SET ProductID = ?, Amount = ?
+             WHERE RecipeID = ?`,
+            [data.ProductID, data.Amount, recipeID]
         );
-        
+
         if (updatedRecipes_parts.affectedRows === 0) {
-            return response.status(404).send({ msg: 'No data updated' });  // Als er geen rijen zijn bijgewerkt stuur 404 status
+            return response.status(404).send({ msg: 'No data updated' });
         }
-        return response.status(200).send({ msg: 'Data updated successfully' }); //false run 200 status
+
+        return response.status(200).send({ msg: 'Data updated successfully' });
 
     } catch (error) {
-        // Verbeterde foutafhandeling: Log de fout en geef een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
-
 });
 
 
 
 
+/**
+ * @swagger
+ * /api/recipe_parts/{id}:
+ *   patch:
+ *     tags:
+ *       - Recipe Parts
+ *     summary: Update a recipe part
+ *     description: |
+ *       This endpoint allows you to update the `ProductID` and `Amount` of a recipe part identified by the `RecipeID` provided in the URL. 
+ *       You can update the `ProductID` and `Amount` fields of the existing recipe part. The recipe part is updated only if the provided data contains valid fields.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the recipe part to be updated
+ *         schema:
+ *           type: integer
+ *           example: 2
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ProductID:
+ *                 type: integer
+ *                 description: The ID of the product associated with the recipe part.
+ *                 example: 3
+ *               Amount:
+ *                 type: integer
+ *                 description: The amount of the product in the recipe part.
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Recipe part updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'Data updated successfully'
+ *       400:
+ *         description: Invalid input or no fields to update
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'There are no fields to update'
+ *       404:
+ *         description: Recipe part not found or no matching records
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'Recipe part not found'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'Internal server error'
+ */
 
-router.patch ('/api/recipe_parts/:id', checkSchema(receptenPartsPatchValidatie),  checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
-    // gevalideerde data wordt opgeslagen in data variabelen
-    const data = matchedData(request); 
+ 
+
+
+router.patch('/api/recipe_parts/:id', checkSchema(receptenPartsPatchValidatie), checkSchema(IDvalidatie), resultValidator, cors(corsOptions), async (request, response) => {
+    const data = matchedData(request);
     const recipeID = request.params.id;
 
     try {
-        const [existingRecipeParts] = await pool.query('SELECT * FROM recipes WHERE recipeID = ?', [recipeID]);
+        // Stap 1: Controleer of het recept bestaat
+        const [existingRecipeParts] = await pool.query('SELECT * FROM recipe_parts WHERE RecipeID = ?', [recipeID]);
 
         if (existingRecipeParts.length === 0) {
-            return response.status(404).send({msg: "Recipe not found"}); 
+            return response.status(404).send({ msg: 'Recipe part not found' });
         }
 
-        // toevoegen van dynamische velden.
-        const teUpdatenVelden =[];
+        // Stap 2: Dynamisch bepalen welke velden worden bijgewerkt
+        const teUpdatenVelden = [];
         const teUpdatenWaarden = [];
 
-        // controleren van alle velden en waarden.
-        if(data.rRcipeID){
-            teUpdatenVelden.push(`RecipeID = ?`);
-            teUpdatenWaarden.push(data.RecipeID);
-        }
-        if(data.ProductID){
-            teUpdatenVelden.push(`ProductID = ?`);
+        // Controleer voor elk veld of het aanwezig is en voeg toe aan de lijst voor update
+        if (data.ProductID) {
+            teUpdatenVelden.push('ProductID = ?');
             teUpdatenWaarden.push(data.ProductID);
         }
-        if(data.Amount){
-            teUpdatenVelden.push(`Amount = ?`);
+        if (data.Amount) {
+            teUpdatenVelden.push('Amount = ?');
             teUpdatenWaarden.push(data.Amount);
-          }
-        
-
-        //ProductID toevoegen aan de lijst
-        teUpdatenWaarden.push(RecipeID);
-
-        if (teUpdatenVelden === 0){
-            return response.status(400).send({msg: "there are no fields to update"});
-        } 
-
-        // Stap 1: Controleer of de naam van het product al bestaat in de database
-        const [existingName] = await pool.query(`SELECT * FROM recipe WHERE Name = ?`, [data.Name]); 
-
-        // Als de e-mail al bestaat, stuur dan een foutmelding terug
-        if (existingName.length > 0) {
-            return response.status(400).send({ msg: "Product name already exists" });
         }
 
-        //opstellen van de query
+        // Voeg het recipeID toe als laatste parameter voor de WHERE-clausule
+        teUpdatenWaarden.push(recipeID);
+
+        // Stap 3: Controleer of er velden zijn om bij te werken
+        if (teUpdatenVelden.length === 0) {
+            return response.status(400).send({ msg: 'There are no fields to update' });
+        }
+
+        // Stap 5: Opstellen van de dynamische update query
         const sqlQuery = `
-            UPDATE recipe
-            SET ${teUpdatenVelden.join(', ')} WHERE RecipesID = ?
+            UPDATE recipe_parts
+            SET ${teUpdatenVelden.join(', ')}
+            WHERE RecipeID = ?
         `;
 
-        //uitvoeren van de query
+        // Stap 6: Voer de update query uit
         const [updatedRecipesParts] = await pool.query(sqlQuery, teUpdatenWaarden);
 
-        if (updatedRecipesParts.affectedRows === 0 ){
-            return response.status(400).send({msg: "no given values to update"})
+        if (updatedRecipesParts.affectedRows === 0) {
+            return response.status(404).send({ msg: 'No data updated' });
         }
 
-        return response.status(200).send({msg: "recipes is updated"})
+        return response.status(200).send({ msg: 'Data updated successfully' });
 
     } catch (error) {
-         // Foutafhandeling: Log de fout en stuur een interne serverfout terug
+        // Log de fout en stuur een interne serverfout terug
         console.error('Database error:', error);
         return response.status(500).send({ msg: 'Internal server error' });
     }
 });
+
+
+
+
+
+/**
+ * @swagger
+ * /api/recipe_parts/{id}:
+ *   delete:
+ *     tags:
+ *       - Recipe Parts
+ *     summary: Delete a recipe part by ID
+ *     description: |
+ *       This endpoint deletes a recipe part from the `recipe_parts` table, identified by the `RecipeID` provided in the URL. 
+ *       If no recipe part is found with the given ID, it will return a 404 error. 
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the recipe part to be deleted
+ *         schema:
+ *           type: integer
+ *           example: 2
+ *     responses:
+ *       200:
+ *         description: Recipe part deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'Recipe is deleted'
+ *       404:
+ *         description: No recipe part found with the given RecipeID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'No recipe found with given recipe id'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: 'Server error'
+ */
 
 
 
@@ -274,11 +515,11 @@ router.delete('/api/recipe_parts/:id', checkSchema(IDvalidatie), resultValidator
     const data = matchedData(request);
     const recipeID = data.id;
     try {
-        const [checkenRecipeID] = await pool.query(`SELECT * FROM recipe WHERE recipeID = ?`, [recipeID]);
+        const [checkenRecipeID] = await pool.query(`SELECT * FROM recipe_parts WHERE RecipeID = ?`, [recipeID]);
         if (checkenRecipeID.length === 0){
             return response.status(404).send({msg: "No recipe found with given recipe id"});
         } else {
-            await pool.query(`DELETE FROM recipe WHERE recipeID = ?`, [recipeID]);
+            await pool.query(`DELETE FROM recipe_parts WHERE RecipeID = ?`, [recipeID]);
             return response.status(200).send({msg: "Recipe is deleted"});
         }
     } catch (error) {
