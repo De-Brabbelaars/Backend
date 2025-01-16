@@ -2,8 +2,8 @@ import mysql from 'mysql2/promise';
 
 // Maak een MySQL connectiepool
 const pool = mysql.createPool({
-  user: 'user',
-  password: 'user',
+  user: 'server',
+  password: 'password',
   host: 'localhost',
   port: 3306, // default MySQL port
   database: 'api',
