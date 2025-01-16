@@ -211,7 +211,7 @@ router.post('/api/bookings/', checkSchema(BookingValidation), resultValidator, c
 
         
     } catch (error) {
-
+        console.log(error.message);
         // Als er een andere fout is, stuur dan een generieke serverfout
         return response.status(500).send({ msg: "Server error" });
     }
@@ -323,6 +323,7 @@ router.get('/api/bookings',checkSchema(emailvalidator), resultValidator, cors(co
         }
 
     } catch (error) {
+        console.log(error.message);
         // Als er een andere fout is, stuur dan een generieke serverfout
         return response.status(500).send({ msg: "Server error" });
     }
@@ -397,8 +398,9 @@ try {
     }
 
 } catch (error) {
-        // Als er een andere fout is, stuur dan een generieke serverfout
-        return response.status(500).send({ msg: "Server error" });
+    console.log(error.message);
+    // Als er een andere fout is, stuur dan een generieke serverfout
+    return response.status(500).send({ msg: "Server error" });
 }
 });
 

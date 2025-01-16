@@ -6,7 +6,7 @@ const pool = mysql.createPool({
   password: 'password',
   host: 'localhost',
   port: 3306, // default MySQL port
-  database: 'api',
+  database: 'groeneweide',
 });
 
 // Controleer of de verbinding succesvol is
