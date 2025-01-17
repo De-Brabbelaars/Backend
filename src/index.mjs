@@ -111,4 +111,5 @@ app.use(session({
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log('Started server on:', Date().toString().split(' ').splice(0,6).join(' '));
 });
