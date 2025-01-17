@@ -35,3 +35,4 @@ CALL Insert_Products(6, 'Eieren', 'example.com', 175, '12-stuks', 20);
 CALL Insert_Products(3, 'Frisdrank', 'example.com', 220, '500ml', 8);
 CALL Insert_Products(2, 'Pasta', 'example.com', 185, '500g', 12);
 CALL Insert_Products(4, 'Yoghurt', 'example.com', 130, '150g', 18);
+CALL Insert_Products(6, 'Wagyu', 'example.com', 1000, '115g', 1)
