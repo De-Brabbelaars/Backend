@@ -101,24 +101,24 @@ router.post('/api/orderd_products',  checkSchema(createorderdProductValidation),
     const data = matchedData(request); 
     try {
 
-        const [existingorder] = await pool.query(`SELECT * FROM orders WHERE OrderID = ?`, [data.OrderID]);         
+        const [existingorder] = await pool.query(`SELECT * FROM Orders WHERE OrderID = ?`, [data.OrderID]);         
         if (existingorder.length === 0) {
             return response.status(400).send({ msg: "No order found with given Order ID " });
         }
 
-        const [NoExsistingProducts] = await pool.query(`SELECT * FROM products WHERE ProductID = ?`, [data.ProductID]); 
+        const [NoExsistingProducts] = await pool.query(`SELECT * FROM Products WHERE ProductID = ?`, [data.ProductID]); 
         if (NoExsistingProducts.length === 0) {
             return response.status(404).send({ msg: "No product found with given productID" });
         }
 
 
-        const [exsitingCombination] = await pool.query(`SELECT * FROM ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
+        const [exsitingCombination] = await pool.query(`SELECT * FROM Ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
         if (exsitingCombination.length > 0) {
             return response.status(404).send({ msg: "Product is already ordered" });
         }
 
         await pool.query(
-            `INSERT INTO ordered_products (ProductID, OrderID, Amount) VALUES (?, ?, ?)`, 
+            `INSERT INTO Ordered_products (ProductID, OrderID, Amount) VALUES (?, ?, ?)`, 
             [data.ProductID, data.OrderID, data.Amount,] 
         );
 
@@ -192,7 +192,7 @@ router.post('/api/orderd_products',  checkSchema(createorderdProductValidation),
 
 router.get('/api/orderd_products', cors(corsOptions), async (request, response) => {
     try {
-        const [getorderd_products] = await pool.query(`SELECT * FROM ordered_products`)
+        const [getorderd_products] = await pool.query(`SELECT * FROM Ordered_products`)
         if (getorderd_products.length === 0){
             return response.status(404).send({msg: "No ordered products found"})
         }
@@ -273,7 +273,7 @@ router.get('/api/orderd_products/:id', checkSchema(IDvalidatie), resultValidator
 
     try {
         // SQL-query uitvoeren om gebruiker te zoeken
-        const [existingorder] = await pool.query('SELECT * FROM ordered_products WHERE OrderID = ?', [orderid]);
+        const [existingorder] = await pool.query('SELECT * FROM Ordered_products WHERE OrderID = ?', [orderid]);
 
         if (existingorder.length > 0) {
             return response.status(200).json(existingorder);
@@ -381,19 +381,19 @@ router.put ('/api/orderd_products/:id', checkSchema(createorderdProductValidatio
     const id= request.params.id;
     const ProductID = data.ProductID
 
-    const [NoMatch] = await pool.query(`SELECT * FROM ordered_products WHERE OrderID = ? and ProductID = ?`, [id, data.ProductID]);
+    const [NoMatch] = await pool.query(`SELECT * FROM Ordered_products WHERE OrderID = ? and ProductID = ?`, [id, data.ProductID]);
     if(NoMatch.length === 0) {
         return response.status(404).send({msg: "No orderd products found with given orderID"})
     } 
 
-    const [exsitingCombination] = await pool.query(`SELECT * FROM ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
+    const [exsitingCombination] = await pool.query(`SELECT * FROM Ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
     if (exsitingCombination.length > 0) {
         return response.status(404).send({ msg: "Product is already ordered" });
     }
 
     try {
         const [updatedOrderedProducts] = await pool.query(
-            `UPDATE ordered_products 
+            `UPDATE Ordered_products 
             SET ProductID = ?, OrderID = ?, Amount = ? WHERE OrderID = ? and ProductID = ? `, // SQL query om een gebruiker toe te voegen
             [data.ProductID, data.OrderID, data.Amount, id, ProductID] // De waarden die in de query moeten worden ingevuld
         );
@@ -510,7 +510,7 @@ router.patch('/api/ordered_products/:orderId/:productId', checkSchema(updateorde
     try {
         // Controleer of het unieke paar van OrderID en ProductID bestaat
         const [existingProduct] = await pool.query(
-            `SELECT * FROM ordered_products WHERE OrderID = ? AND ProductID = ?`,
+            `SELECT * FROM Ordered_products WHERE OrderID = ? AND ProductID = ?`,
             [orderId, productId]
         );
 
@@ -518,7 +518,7 @@ router.patch('/api/ordered_products/:orderId/:productId', checkSchema(updateorde
             return response.status(404).send({ msg: "No ordered products found with the given OrderID and ProductID" });
         }
 
-        const [exsitingCombination] = await pool.query(`SELECT * FROM ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
+        const [exsitingCombination] = await pool.query(`SELECT * FROM Ordered_products WHERE ProductID = ? and OrderID = ?`, [data.ProductID, data.OrderID]); 
         if (exsitingCombination.length > 0) {
             return response.status(404).send({ msg: "Product is already ordered" });
         }
@@ -549,7 +549,7 @@ router.patch('/api/ordered_products/:orderId/:productId', checkSchema(updateorde
 
         // Stel de SQL-query samen
         const sqlQuery = `
-            UPDATE ordered_products
+            UPDATE Ordered_products
             SET ${fieldsToUpdate.join(', ')}
             WHERE OrderID = ? AND ProductID = ?
         `;
@@ -637,14 +637,14 @@ router.delete('/api/ordered_products/:orderId/:productId', checkSchema(orderIDVa
     const { orderId, productId } = request.params; // Unieke IDs van de route
 
     try {
-        const [ordercheck] = await pool.query('SELECT * FROM ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
+        const [ordercheck] = await pool.query('SELECT * FROM Ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
         if (ordercheck.length === 0) {
             return response.status(404).send({ msg: "No ordered products found with given order and product id" });
         }
 
-        await pool.query('DELETE FROM ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
+        await pool.query('DELETE FROM Ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
 
-        const [checkAfterDelete] = await pool.query('SELECT * FROM ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
+        const [checkAfterDelete] = await pool.query('SELECT * FROM Ordered_products WHERE OrderID = ? AND ProductID = ?', [orderId, productId]);
         if (checkAfterDelete.length === 0) {
             return response.status(204).send({ msg: "Ordered product is deleted." });
         }

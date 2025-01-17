@@ -115,14 +115,14 @@ router.get('/api/users', checkSchema(filterValidationSchema), resultValidator, c
 
         if (filter && value) {
             // SQL-query met filter en waarde
-            const sql = `SELECT * FROM users WHERE ?? LIKE ?`;
+            const sql = `SELECT * FROM Users WHERE ?? LIKE ?`;
             const params = [filter, `%${value}%`];
             [users] = await pool.query(sql, params); // Voer de query uit
         }
 
         // Als geen resultaten gevonden worden, haal alle gebruikers op
         if (!users || users.length === 0) {
-            [users] = await pool.query('SELECT * FROM users');
+            [users] = await pool.query('SELECT * FROM Users');
         }
 
         // Retourneer de gebruikers
@@ -252,14 +252,14 @@ router.post('/api/users',  checkSchema(createuserValidationSchema), resultValida
     try {
         // Stap 1: Controleer of de e-mail van de nieuwe gebruiker al bestaat in de database
         // existingUser bevat de eerste gevonden gebruiker die voldoet aan data.email of undefined als er geen match is.
-        const [existingEmail] = await pool.query(`SELECT * FROM users WHERE Email = ?`, [data.Email]); 
+        const [existingEmail] = await pool.query(`SELECT * FROM Users WHERE Email = ?`, [data.Email]); 
 
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
         if (existingEmail.length > 0) {
             return response.status(400).send({ msg: "Email already exists" });
         }
 
-        const [existingPhone] = await pool.query(`SELECT * FROM users WHERE Phone = ?`, [data.Phone]); 
+        const [existingPhone] = await pool.query(`SELECT * FROM Users WHERE Phone = ?`, [data.Phone]); 
 
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
         if (existingPhone.length > 0) {
@@ -268,7 +268,7 @@ router.post('/api/users',  checkSchema(createuserValidationSchema), resultValida
 
         // Stap 2: Voeg de nieuwe gebruiker toe aan de database
         const [result] = await pool.query(
-            `INSERT INTO users (Email, Phone, Firstname, Lastname, Housenumber, Streetname, Postalcode, Country) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, // SQL query om een gebruiker toe te voegen
+            `INSERT INTO Users (Email, Phone, Firstname, Lastname, Housenumber, Streetname, Postalcode, Country) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, // SQL query om een gebruiker toe te voegen
             [data.Email, data.Phone, data.Firstname, data.Lastname, data.Housenumber, data.Streetname, data.Postalcode, data.Country,] // De waarden die in de query moeten worden ingevuld
         );
 
@@ -379,7 +379,7 @@ router.get('/api/users/:id', checkSchema(IDvalidatie), resultValidator, cors(cor
 
     try {
         // SQL-query uitvoeren om gebruiker te zoeken
-        const [existingUser] = await pool.query('SELECT * FROM users WHERE Userid = ?', [UserID]);
+        const [existingUser] = await pool.query('SELECT * FROM Users WHERE Userid = ?', [UserID]);
 
         if (existingUser.length > 0) {
             return response.status(200).json(existingUser);
@@ -494,13 +494,13 @@ router.put ('/api/users/:id', checkSchema(createuserValidationSchema),  checkSch
     const data = matchedData(request); 
     const UserID = request.params.id;
 
-    const [existingEmail] = await pool.query(`SELECT * FROM users WHERE Email = ?`, [data.Email]); 
+    const [existingEmail] = await pool.query(`SELECT * FROM Users WHERE Email = ?`, [data.Email]); 
     // Als de e-mail al bestaat, stuur dan een foutmelding terug
     if (existingEmail.length > 0) {
         return response.status(400).send({ msg: "Email already exists" });
     }
 
-    const [existingPhone] = await pool.query(`SELECT * FROM users WHERE Phone = ?`, [data.Phone]); 
+    const [existingPhone] = await pool.query(`SELECT * FROM Users WHERE Phone = ?`, [data.Phone]); 
 
     // Als de e-mail al bestaat, stuur dan een foutmelding terug
     if (existingPhone.length > 0) {
@@ -509,7 +509,7 @@ router.put ('/api/users/:id', checkSchema(createuserValidationSchema),  checkSch
 
     try {
         const [updatedUser] = await pool.query(
-            `UPDATE users
+            `UPDATE Users
              SET Email = ?, Phone = ?, Firstname = ?, Lastname = ?, Housenumber = ?, Streetname = ?, Postalcode = ?, Country = ? WHERE UserID = ?`, // SQL query om een gebruiker toe te voegen
             [data.Email, data.Phone, data.Firstname, data.Lastname, data.Housenumber, data.Streetname, data.Postalcode, data.Country, UserID] // De waarden die in de query moeten worden ingevuld
         );
@@ -628,7 +628,7 @@ router.patch ('/api/users/:id', checkSchema(updateUserValidationSchema),  checkS
     const UserID = request.params.id;
 
     try {
-        const [existingUser] = await pool.query('SELECT * FROM users WHERE UserID = ?', [UserID]);
+        const [existingUser] = await pool.query('SELECT * FROM Users WHERE UserID = ?', [UserID]);
 
         if (existingUser.length === 0) {
             return response.status(404).send({msg: "User not found"}); 
@@ -682,14 +682,14 @@ router.patch ('/api/users/:id', checkSchema(updateUserValidationSchema),  checkS
 
         // Stap 1: Controleer of de e-mail van de nieuwe gebruiker al bestaat in de database
         // existingUser bevat de eerste gevonden gebruiker die voldoet aan data.email of undefined als er geen match is.
-        const [existingEmail] = await pool.query(`SELECT * FROM users WHERE Email = ?`, [data.Email]); 
+        const [existingEmail] = await pool.query(`SELECT * FROM Users WHERE Email = ?`, [data.Email]); 
 
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
         if (existingEmail.length > 0) {
             return response.status(400).send({ msg: "Email already exists" });
         }
     
-        const [existingPhone] = await pool.query(`SELECT * FROM users WHERE Phone = ?`, [data.Phone]); 
+        const [existingPhone] = await pool.query(`SELECT * FROM Users WHERE Phone = ?`, [data.Phone]); 
     
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
         if (existingPhone.length > 0) {
@@ -698,7 +698,7 @@ router.patch ('/api/users/:id', checkSchema(updateUserValidationSchema),  checkS
         
         //opstellen van de query
         const sqlQuery = `
-            UPDATE users
+            UPDATE Users
             SET ${teUpdatenVelden.join(', ')} WHERE UserID = ?
         `;
 
@@ -776,12 +776,12 @@ router.delete ('/api/users/:id', checkSchema(IDvalidatie), resultValidator, cors
     const UserID = data.id;
 
     try {
-        const [usercheck] = await pool.query('SELECT * FROM users Where UserID = ?', [UserID]);
+        const [usercheck] = await pool.query('SELECT * FROM Users Where UserID = ?', [UserID]);
         if (usercheck.length === 0){
             return response.status(404).send({msg: "user not found"})
         }
         else
-        await pool.query('DELETE FROM users WHERE userid = ?', [UserID]);
+        await pool.query('DELETE FROM Users WHERE UserID = ?', [UserID]);
             return response.status(204).send({msg: "user is verwijderd"});
 
     } catch (error) {
