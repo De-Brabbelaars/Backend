@@ -15,10 +15,10 @@ const pool = mysql.createPool({
     // Probeer verbinding te maken en een eenvoudige query uit te voeren
     const connection = await pool.getConnection();
     await connection.ping(); // Test de verbinding
-    console.log('Succesvol verbonden met de database!');
+    console.log('Succesfully connected to database');
     connection.release(); // Zorg ervoor dat de connectie wordt teruggegeven aan de pool
   } catch (error) {
-    console.error('Fout bij verbinden met de database:', error.message);
+    console.error('Error when attempting to connect to database:', error.message);
   }
 })();
 
