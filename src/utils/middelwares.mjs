@@ -29,7 +29,7 @@ export const userCreationLimiter = rateLimit({
 });
 
 export const corsOptions = {
-    origin: ['http://127.0.0.1:*', 'http://145.89.192.67:8080', 'http://145.89.192.67', ], // Specifieke frontend-domain
+    origin: ['http://127.0.0.1', 'http://145.89.192.67', ], // Specifieke frontend-domain
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Alleen GET en POST-methodes toestaan
     allowedHeaders: ['Content-Type', 'Authorization'], // Toegestane headers
     credentials: true, // Cookies toestaan
