@@ -135,7 +135,7 @@ router.post('/api/orders',  checkSchema(createOrderValidation), resultValidator,
     const data = matchedData(request); 
     try {
 
-        const [existingLocker] = await pool.query(`SELECT * FROM lockers WHERE LockerID = ?`, [data.LockerID]);         
+        const [existingLocker] = await pool.query(`SELECT * FROM Lockers WHERE LockerID = ?`, [data.LockerID]);         
         if (existingLocker.length === 0) {
             return response.status(400).send({ msg: "No locker found with given ID" });
         }
@@ -145,13 +145,13 @@ router.post('/api/orders',  checkSchema(createOrderValidation), resultValidator,
             return response.status(404).send({ msg: "No Booking found with given BookingID" });
         }
         
-        const [locker] = await pool.query(`SELECT * FROM lockers WHERE BookingID = ?`, [data.BookingID]); 
+        const [locker] = await pool.query(`SELECT * FROM Lockers WHERE BookingID = ?`, [data.BookingID]); 
         if (locker.length === 0) {
             return response.status(404).send({ msg: "No Locker found with given BookingID" });
         }
 
         const[result] = await pool.query(
-            `INSERT INTO orders (LockerID, BookingID, Price, MomentCreated, MomentDelivered, MomentGathered) VALUES (?, ?, ?, ?, ?, ?)`, 
+            `INSERT INTO Orders (LockerID, BookingID, Price, MomentCreated, MomentDelivered, MomentGathered) VALUES (?, ?, ?, ?, ?, ?)`, 
             [data.LockerID, data.BookingID, data.Price, data.MomentCreated, data.MomentDelivered, data.MomentGathered,] 
         );
 
@@ -250,7 +250,7 @@ router.post('/api/orders',  checkSchema(createOrderValidation), resultValidator,
 
 router.get('/api/orders', cors(corsOptions), async (request, response) => {
     try {
-        const [getorders] = await pool.query(`SELECT * FROM orders`)
+        const [getorders] = await pool.query(`SELECT * FROM Orders`)
         if (getorders.length === 0){
             return response.status(404).send({msg: "No orders found"})
         }
@@ -351,7 +351,7 @@ router.get('/api/orders/:id', checkSchema(IDvalidatie), resultValidator, cors(co
 
     try {
         // SQL-query uitvoeren om gebruiker te zoeken
-        const [existingorder] = await pool.query('SELECT * FROM orders WHERE OrderID = ?', [orderid]);
+        const [existingorder] = await pool.query('SELECT * FROM Orders WHERE OrderID = ?', [orderid]);
 
         if (existingorder.length > 0) {
             return response.status(200).json(existingorder);
@@ -472,12 +472,12 @@ router.put ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchema(
     const data = matchedData(request); 
     const oderid= request.params.id;
 
-    const [invalidid] = await pool.query(`SELECT * FROM orders WHERE OrderID = ?`, [oderid]);
+    const [invalidid] = await pool.query(`SELECT * FROM Orders WHERE OrderID = ?`, [oderid]);
     if(invalidid.length === 0) {
         return response.status(404).send({msg: "No order found with given ID"})
     } 
 
-    const [existingLocker] = await pool.query(`SELECT * FROM lockers WHERE LockerID = ?`, [data.LockerID]);         
+    const [existingLocker] = await pool.query(`SELECT * FROM Lockers WHERE LockerID = ?`, [data.LockerID]);         
     if (existingLocker.length === 0) {
         return response.status(400).send({ msg: "No locker found with given ID" });
     }
@@ -487,14 +487,14 @@ router.put ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchema(
         return response.status(404).send({ msg: "No Booking found with given BookingID" });
     }
     
-    const [locker] = await pool.query(`SELECT * FROM lockers WHERE BookingID = ?`, [data.BookingID]); 
+    const [locker] = await pool.query(`SELECT * FROM Lockers WHERE BookingID = ?`, [data.BookingID]); 
     if (locker.length === 0) {
         return response.status(404).send({ msg: "No Locker found with given BookingID" });
     }
 
     try {
         const [updatedorder] = await pool.query(
-            `UPDATE orders
+            `UPDATE Orders
             SET BookingID = ?, LockerID = ?, Price = ?, MomentCreated = ?, MomentDelivered = ?, MomentGathered = ? WHERE OrderID = ? `, // SQL query om een gebruiker toe te voegen
             [data.BookingID, data.LockerID, data.Price, data.MomentCreated, data.MomentDelivered, data.MomentGathered, oderid] // De waarden die in de query moeten worden ingevuld
         );
@@ -622,7 +622,7 @@ router.patch ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchem
     const orderid = request.params.id;
 
     try {
-        const [existingorder] = await pool.query('SELECT * FROM orders WHERE OrderID = ?', [orderid]);
+        const [existingorder] = await pool.query('SELECT * FROM Orders WHERE OrderID = ?', [orderid]);
 
         if (existingorder.length === 0) {
             return response.status(404).send({msg: "Order not found"}); 
@@ -664,12 +664,12 @@ router.patch ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchem
             return response.status(400).send({msg: "there are no fields to update"});
         } 
 
-        const [locker] = await pool.query(`SELECT * FROM lockers WHERE BookingID = ?`, [data.BookingID]); 
+        const [locker] = await pool.query(`SELECT * FROM Lockers WHERE BookingID = ?`, [data.BookingID]); 
         if (locker.length === 0) {
             return response.status(404).send({ msg: "No Locker found with given BookingID" });
         }
 
-        const [existingLockerID] = await pool.query(`SELECT * FROM lockers WHERE LockerID = ?`, [data.LockerID]); 
+        const [existingLockerID] = await pool.query(`SELECT * FROM Lockers WHERE LockerID = ?`, [data.LockerID]); 
 
         if (existingLockerID.length === 0) {
             return response.status(400).send({ msg: "No locker found with given ID" });
@@ -677,7 +677,7 @@ router.patch ('/api/orders/:id', checkSchema(patchOrdersValidation),  checkSchem
         
         //opstellen van de query
         const sqlQuery = `
-            UPDATE orders
+            UPDATE Orders
             SET ${veldenOmTeUpdaten.join(', ')} WHERE OrderID = ?
         `;
 
@@ -759,18 +759,18 @@ router.delete ('/api/orders/:id', checkSchema(IDvalidatie), resultValidator, cor
     const orderid = data.id;
 
     try {
-        const [ordercheck] = await pool.query('SELECT * FROM orders Where OrderID = ?', [orderid]);
+        const [ordercheck] = await pool.query('SELECT * FROM Orders Where OrderID = ?', [orderid]);
         if (ordercheck.length === 0){
             return response.status(404).send({msg: "Order not found"})
         }
-        const [orderCheck2] = await pool.query('SELECT * FROM ordered_products Where OrderID = ?', [orderid]);
+        const [orderCheck2] = await pool.query('SELECT * FROM Ordered_products Where OrderID = ?', [orderid]);
         if (orderCheck2.length === 0){
             return response.status(404).send({msg: "No ordered products found with given order ID"})
         }
 
         else
         await pool.query('DELETE FROM Orders WHERE OrderID = ?', [orderid]);
-        await pool.query('DELETE FROM ordered_products WHERE OrderID = ?', [orderid]);
+        await pool.query('DELETE FROM Ordered_products WHERE OrderID = ?', [orderid]);
         return response.status(204).send({msg: "order and products are deleted."});
 
     } catch (error) {

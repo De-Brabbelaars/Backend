@@ -92,7 +92,7 @@ router.post('/api/lockers',  checkSchema(LockerValidation), resultValidator, cor
     const data = matchedData(request); 
     try {
 
-        const [existingLocker] = await pool.query(`SELECT * FROM lockers WHERE LockerID = ?`, [data.LockerID]);         
+        const [existingLocker] = await pool.query(`SELECT * FROM Lockers WHERE LockerID = ?`, [data.LockerID]);         
         if (existingLocker.length > 0) {
             return response.status(400).send({ msg: "Locker already in use" });
         }
@@ -103,7 +103,7 @@ router.post('/api/lockers',  checkSchema(LockerValidation), resultValidator, cor
         }
 
         await pool.query(
-            `INSERT INTO lockers (LockerID, BookingID) VALUES (?, ?)`, 
+            `INSERT INTO Lockers (LockerID, BookingID) VALUES (?, ?)`, 
             [data.LockerID, data.BookingID,] 
         );
 
@@ -175,7 +175,7 @@ router.post('/api/lockers',  checkSchema(LockerValidation), resultValidator, cor
 
 router.get('/api/lockers', cors(corsOptions), async (request, response) => {
     try {
-        const [getlockers] = await pool.query(`SELECT * FROM lockers`)
+        const [getlockers] = await pool.query(`SELECT * FROM Lockers`)
         if (getlockers.length === 0){
             return response.status(404).send({msg: "No lockers found"})
         }
@@ -254,7 +254,7 @@ router.get('/api/lockers/:id', checkSchema(IDvalidatie), resultValidator, cors(c
 
     try {
         // SQL-query uitvoeren om gebruiker te zoeken
-        const [existingLocker] = await pool.query('SELECT * FROM lockers WHERE LockerID = ?', [lockerid]);
+        const [existingLocker] = await pool.query('SELECT * FROM Lockers WHERE LockerID = ?', [lockerid]);
 
         if (existingLocker.length > 0) {
             return response.status(200).json(existingLocker);
@@ -344,7 +344,7 @@ router.put ('/api/lockers/:id', checkSchema(UpdateLockerValidation),  checkSchem
     const data = matchedData(request); 
     const lockerid= request.params.id;
 
-    const [invalidid] = await pool.query(`SELECT * FROM lockers WHERE LockerID = ?`, [lockerid]);
+    const [invalidid] = await pool.query(`SELECT * FROM Lockers WHERE LockerID = ?`, [lockerid]);
     if(invalidid.length === 0) {
         return response.status(404).send({msg: "No locker found with given ID"})
     } 
@@ -357,7 +357,7 @@ router.put ('/api/lockers/:id', checkSchema(UpdateLockerValidation),  checkSchem
     
     try {
         const [updatedlocker] = await pool.query(
-            `UPDATE lockers
+            `UPDATE Lockers
             SET BookingID = ?, MomentDelivered = ? WHERE LockerID = ? `, // SQL query om een gebruiker toe te voegen
             [data.BookingID, data.MomentDelivered, lockerid] // De waarden die in de query moeten worden ingevuld
         );
@@ -463,7 +463,7 @@ router.patch ('/api/lockers/:id', checkSchema(UpdateLockerpatchValidation),  che
     const lockerid = request.params.id;
 
     try {
-        const [existingLocker] = await pool.query('SELECT * FROM lockers WHERE LockerID = ?', [lockerid]);
+        const [existingLocker] = await pool.query('SELECT * FROM Lockers WHERE LockerID = ?', [lockerid]);
 
         if (existingLocker.length === 0) {
             return response.status(404).send({msg: "Locker not found"}); 
@@ -488,7 +488,7 @@ router.patch ('/api/lockers/:id', checkSchema(UpdateLockerpatchValidation),  che
             return response.status(400).send({msg: "there are no fields to update"});
         } 
 
-        const [existingLockerID] = await pool.query(`SELECT * FROM lockers WHERE LockerID = ?`, [data.LockerID]); 
+        const [existingLockerID] = await pool.query(`SELECT * FROM Lockers WHERE LockerID = ?`, [data.LockerID]); 
 
         if (existingLockerID.length > 0) {
             return response.status(400).send({ msg: "Locker ID already exists" });
@@ -496,7 +496,7 @@ router.patch ('/api/lockers/:id', checkSchema(UpdateLockerpatchValidation),  che
         
         //opstellen van de query
         const sqlQuery = `
-            UPDATE lockers
+            UPDATE Lockers
             SET ${FieldsToUpdate.join(', ')} WHERE LockerID = ?
         `;
 
@@ -575,12 +575,12 @@ router.delete ('/api/lockers/:id', checkSchema(IDvalidatie), resultValidator, co
     const lockerid = data.id;
 
     try {
-        const [lockerCheck] = await pool.query('SELECT * FROM lockers Where LockerID = ?', [lockerid]);
+        const [lockerCheck] = await pool.query('SELECT * FROM Lockers Where LockerID = ?', [lockerid]);
         if (lockerCheck.length === 0){
             return response.status(404).send({msg: "Locker not found"})
         }
         else
-        await pool.query('DELETE FROM lockers WHERE LockerID = ?', [lockerid]);
+        await pool.query('DELETE FROM Lockers WHERE LockerID = ?', [lockerid]);
         return response.status(204).send({msg: "Locker is deleted"});
 
     } catch (error) {

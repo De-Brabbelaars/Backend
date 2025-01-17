@@ -147,7 +147,7 @@ router.post('/api/bookings/', checkSchema(BookingValidation), resultValidator, c
     try {
 
         // haalt het userid op aan de hand van gegeven email adress.
-        const [ophalenUserID] = await pool.query(`SELECT UserID FROM users WHERE email = ?`, [data.Email]);
+        const [ophalenUserID] = await pool.query(`SELECT UserID FROM Users WHERE Email = ?`, [data.Email]);
         
         // kijkt of er een user is gevonden met het gegeven mail adress.
         if (ophalenUserID.length === 0){
@@ -191,7 +191,7 @@ router.post('/api/bookings/', checkSchema(BookingValidation), resultValidator, c
         const userid = ophalenUserID[0].UserID;
 
         const [result] = await pool.query(
-            `INSERT INTO bookings (UserID, NumberOfGuests, NumberOfKeycards, MomentStart, MomentEnd, PlaceNumber, CheckedIn) VALUES (?, ?, ?, ?, ?, ?, ?)`, // SQL query om een gebruiker toe te voegen
+            `INSERT INTO Bookings (UserID, NumberOfGuests, NumberOfKeycards, MomentStart, MomentEnd, PlaceNumber, CheckedIn) VALUES (?, ?, ?, ?, ?, ?, ?)`, // SQL query om een gebruiker toe te voegen
             [userid, data.NumberOfGuests, data.NumberOfKeycards, data.MomentStart, data.MomentEnd, data.PlaceNumber, data.CheckedIn,] // De waarden die in de query moeten worden ingevuld
         );
         
@@ -301,7 +301,7 @@ router.get('/api/bookings',checkSchema(emailvalidator), resultValidator, cors(co
 
     try {
         // haalt het userid op aan de hand van gegeven email adress.
-        const [ophalenUserID] = await pool.query(`SELECT UserID FROM users WHERE email = ?`, [data.Email]);
+        const [ophalenUserID] = await pool.query(`SELECT UserID FROM Users WHERE email = ?`, [data.Email]);
         
         // kijkt of er een user is gevonden met het gegeven mail adress.
         if (ophalenUserID.length === 0){
@@ -312,7 +312,7 @@ router.get('/api/bookings',checkSchema(emailvalidator), resultValidator, cors(co
         const userid = ophalenUserID[0].UserID;
 
 
-        const [ophalenBookings] = await pool.query(`SELECT * FROM bookings WHERE UserID = ?`, [userid]);
+        const [ophalenBookings] = await pool.query(`SELECT * FROM Bookings WHERE UserID = ?`, [userid]);
         if (ophalenBookings.length !== 0 ){
             // Transformeer de resultaten met mapBookingData
             const mappedBookings = ophalenBookings.map(mapBookingData);
@@ -388,12 +388,12 @@ router.delete('/api/bookings/:id', checkSchema(IDvalidatie), resultValidator, co
     const data = matchedData(request);
     const BookingID = data.id;
 try {
-    const [checkenBooking] = await pool.query(`SELECT * FROM bookings WHERE BookingID = ?`, [BookingID]);
+    const [checkenBooking] = await pool.query(`SELECT * FROM Bookings WHERE BookingID = ?`, [BookingID]);
     if (checkenBooking.length === 0){
         return response.status(404).send({msg: "No booking found with given booking id"});
     }
     else{
-        await pool.query(`DELETE FROM bookings WHERE BookingID = ?`, [BookingID]);
+        await pool.query(`DELETE FROM Bookings WHERE BookingID = ?`, [BookingID]);
         return response.status(200).send({msg: "Booking is canncelled"});
     }
 

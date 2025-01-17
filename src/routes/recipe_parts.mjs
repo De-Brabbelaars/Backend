@@ -91,14 +91,14 @@ router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultVal
     try {
         // Stap 1: Controleer of de e-mail van de nieuwe gebruiker al bestaat in de database
         // existingUser bevat de eerste gevonden gebruiker die voldoet aan data.email of undefined als er geen match is.
-        const [existingProductID] = await pool.query(`SELECT * FROM products WHERE ProductID = ?`, [data.ProductID]); 
+        const [existingProductID] = await pool.query(`SELECT * FROM Products WHERE ProductID = ?`, [data.ProductID]); 
 
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
         if (existingProductID.length === 0) {
             return response.status(400).send({ msg: "No product found with given product ID" });
         }
 
-        const [existingRecipeID] = await pool.query(`SELECT * FROM recipes WHERE RecipeID = ?`, [data.RecipeID]); 
+        const [existingRecipeID] = await pool.query(`SELECT * FROM Recipes WHERE RecipeID = ?`, [data.RecipeID]); 
 
         // Als de e-mail al bestaat, stuur dan een foutmelding terug
         if (existingRecipeID.length === 0) {
@@ -107,7 +107,7 @@ router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultVal
 
         // Stap 2: Voeg de nieuwe gebruiker toe aan de database
         await pool.query(
-            `INSERT INTO recipe_parts (ProductID, RecipeID, Amount) VALUES (?, ?, ?)`, // SQL query om een gebruiker toe te voegen
+            `INSERT INTO Recipe_parts (ProductID, RecipeID, Amount) VALUES (?, ?, ?)`, // SQL query om een gebruiker toe te voegen
             [data.ProductID, data.RecipeID, data.Amount,] // De waarden die in de query moeten worden ingevuld
         );
 
@@ -187,7 +187,7 @@ router.post('/api/recipe_parts',  checkSchema(receptenPartsValidatie), resultVal
   
 router.get('/api/recipe_parts', cors(corsOptions), async (request, response) => {
     try {
-    const [ophalenReceptenParts] = await pool.query(`SELECT * FROM recipe_parts`)
+    const [ophalenReceptenParts] = await pool.query(`SELECT * FROM Recipe_parts`)
         if (ophalenReceptenParts.length === 0){
             return response.status(404).send({msg: "No recipe found"})
     }
@@ -288,7 +288,7 @@ router.put('/api/recipe_parts/:id', checkSchema(receptenPartsPatchValidatie), re
 
     try {
         const [existing_recipes_parts] = await pool.query(
-            `SELECT * FROM recipe_parts WHERE RecipeID = ?`,
+            `SELECT * FROM Recipe_parts WHERE RecipeID = ?`,
             [recipeID]
         );
 
@@ -298,7 +298,7 @@ router.put('/api/recipe_parts/:id', checkSchema(receptenPartsPatchValidatie), re
 
 
         const [updatedRecipes_parts] = await pool.query(
-            `UPDATE recipe_parts
+            `UPDATE Recipe_parts
              SET ProductID = ?, Amount = ?
              WHERE RecipeID = ?`,
             [data.ProductID, data.Amount, recipeID]
@@ -406,7 +406,7 @@ router.patch('/api/recipe_parts/:id', checkSchema(receptenPartsPatchValidatie), 
 
     try {
         // Stap 1: Controleer of het recept bestaat
-        const [existingRecipeParts] = await pool.query('SELECT * FROM recipe_parts WHERE RecipeID = ?', [recipeID]);
+        const [existingRecipeParts] = await pool.query('SELECT * FROM Recipe_parts WHERE RecipeID = ?', [recipeID]);
 
         if (existingRecipeParts.length === 0) {
             return response.status(404).send({ msg: 'Recipe part not found' });
@@ -436,7 +436,7 @@ router.patch('/api/recipe_parts/:id', checkSchema(receptenPartsPatchValidatie), 
 
         // Stap 5: Opstellen van de dynamische update query
         const sqlQuery = `
-            UPDATE recipe_parts
+            UPDATE Recipe_parts
             SET ${teUpdatenVelden.join(', ')}
             WHERE RecipeID = ?
         `;
@@ -519,11 +519,11 @@ router.delete('/api/recipe_parts/:id', checkSchema(IDvalidatie), resultValidator
     const data = matchedData(request);
     const recipeID = data.id;
     try {
-        const [checkenRecipeID] = await pool.query(`SELECT * FROM recipe_parts WHERE RecipeID = ?`, [recipeID]);
+        const [checkenRecipeID] = await pool.query(`SELECT * FROM Recipe_parts WHERE RecipeID = ?`, [recipeID]);
         if (checkenRecipeID.length === 0){
             return response.status(404).send({msg: "No recipe found with given recipe id"});
         } else {
-            await pool.query(`DELETE FROM recipe_parts WHERE RecipeID = ?`, [recipeID]);
+            await pool.query(`DELETE FROM Recipe_parts WHERE RecipeID = ?`, [recipeID]);
             return response.status(200).send({msg: "Recipe is deleted"});
         }
     } catch (error) {
