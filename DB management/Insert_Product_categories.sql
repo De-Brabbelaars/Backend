@@ -16,6 +16,8 @@ BEGIN
 END$$
 DELIMITER ;
 
+CALL Insert_Product_categories('Bakproducten');
+CALL Insert_Product_Categories('Drinken');
 CALL Insert_Product_categories('Fruit');
 CALL Insert_Product_categories('Groenten');
 CALL Insert_Product_categories('Vis');
