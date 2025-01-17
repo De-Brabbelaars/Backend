@@ -148,7 +148,7 @@ router.post('/api/categories', checkSchema(categoryValidationSchema), cors(corsO
 
 router.get('/api/categories', cors(corsOptions), async (request, response) => {
     try {
-        const [ophalencategoryProducten] = await pool.query(`SELECT * FROM Product_categories`);
+        const [ophalencategoryProducten] = await pool.query(`SELECT * FROM Product_categories ORDER BY CategoryID`);
         if (ophalencategoryProducten.length === 0) {
             return response.status(404).send({ msg: "No categories found" });
         }

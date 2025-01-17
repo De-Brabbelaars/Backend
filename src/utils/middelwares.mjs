@@ -29,7 +29,10 @@ export const userCreationLimiter = rateLimit({
 });
 
 export const corsOptions = {
-    origin: ['http://127.0.0.1', 'http://145.89.192.67', 'http://145.89.189.125'], // Specifieke frontend-domain
+    origin: ['http://127.0.0.1', // Local communication
+        'http://145.89.192.67',  // Public server IP
+        /http:\/\/172\.21\.0\.\d+/ // OpenICT VPN IP range 
+    ], // Specifieke frontend-domain
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Alleen GET en POST-methodes toestaan
     allowedHeaders: ['Content-Type', 'Authorization'], // Toegestane headers
     credentials: true, // Cookies toestaan
